@@ -1,0 +1,38 @@
+name: .NET Core
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.201
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build
+    - name: Test
+      run: dotnet test
+
+  delivery:
+    needs: build
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.REPOSITORY_NAME }} .
+      - name: Tag Docker image
+        run: |
+          docker tag ${{ secrets.REPOSITORY_NAME }} s652/${{ secrets.REPOSITORY_NAME }}:${{ github.sha }}
+          docker tag ${{ secrets.REPOSITORY_NAME }} s652/${{ secrets.REPOSITORY_NAME }}:latest
+      - name: Push Docker image
+        run: |
+          docker push s652/${{ secrets.REPOSITORY_NAME }}:${{ github.sha }}
+          docker push s652/${{ secrets.REPOSITORY_NAME }}:latest
