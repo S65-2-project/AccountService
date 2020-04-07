@@ -9,10 +9,10 @@ COPY ["AccountService.csproj", ""]
 RUN dotnet restore "./AccountService/AccountService.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "AccountService.csproj" -c Release -o /app/build
+RUN dotnet build "/AccountService/AccountService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "AccountService.csproj" -c Release -o /app/publish
+RUN dotnet publish "/AccountService/AccountService.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
