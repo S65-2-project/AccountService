@@ -6,7 +6,7 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["AccountService.csproj", ""]
-RUN dotnet restore "./AccountService.csproj"
+RUN dotnet restore "./AccountService/AccountService.csproj"
 COPY . .
 WORKDIR "/src/."
 RUN dotnet build "AccountService.csproj" -c Release -o /app/build
