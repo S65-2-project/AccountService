@@ -22,6 +22,8 @@ jobs:
     needs: build
     runs-on: ubuntu-18.04
     steps:
+      - name: change dir
+      - run: cd AccountService
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Docker login
