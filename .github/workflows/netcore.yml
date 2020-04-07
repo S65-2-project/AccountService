@@ -22,14 +22,12 @@ jobs:
     needs: build
     runs-on: ubuntu-18.04
     steps:
-      - name: change dir
-      - run: cd AccountService
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Docker login
         run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
       - name: Build Docker image
-        run: docker build -t ${{ secrets.REPOSITORY_NAME }} .
+        run: docker build -t ${{ secrets.REPOSITORY_NAME }} ./Accountservice
       - name: Tag Docker image
         run: |
           docker tag ${{ secrets.REPOSITORY_NAME }} s652/${{ secrets.REPOSITORY_NAME }}:${{ github.sha }}
