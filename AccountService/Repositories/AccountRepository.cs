@@ -19,34 +19,25 @@ namespace AccountService.Repositories
             _accounts = database.GetCollection<Account>(settings.AccountCollectionName);
         }
 
-        public Task<List<Account>> Get()
+        public async Task<List<Account>> Get() =>
+            await _accounts.Find(f => true).ToListAsync();
+        
+        public async Task<Account> Get(string email) =>
+            await _accounts.Find<Account>(f => f.Email == email).FirstOrDefaultAsync();
+
+        public async Task<Account> Get(Guid id) =>
+            await _accounts.Find<Account>(f => f.Id == id).FirstOrDefaultAsync();
+
+        public async Task<Account> Create(Account account)
         {
-            throw new NotImplementedException();
+            await _accounts.InsertOneAsync(account);
+            return account;
         }
 
-        public Task<Account> Get(string email)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task Update(Guid id, Account account) =>
+            await _accounts.ReplaceOneAsync(f => f == account, account);
 
-        public Task<Account> Get(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Account> Create(Account account)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Update(Guid id, Account account)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Remove(Guid id)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task Remove(Guid id) =>
+            await _accounts.DeleteManyAsync(f => f.Id == id);
     }
 }
