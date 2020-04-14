@@ -1,5 +1,5 @@
   
-name: push on develop
+name: On push on branch:develop
 
 on:
   push:

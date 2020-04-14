@@ -1,5 +1,5 @@
   
-name: Push On */** or * branch
+name: On push */* or * branch
 
 on:
   push:

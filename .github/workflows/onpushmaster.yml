@@ -1,5 +1,5 @@
   
-name: push on master
+name: On push on branch:master
 
 on:
   push:
