@@ -9,7 +9,7 @@ on:
    
 
 jobs:
-    build:
+  build:
     runs-on: ubuntu-18.04
     container:
       image: mcr.microsoft.com/dotnet/core/sdk:3.1.201-bionic
@@ -33,7 +33,6 @@ jobs:
       with:
         name: dockerfile-artifact
         path: ./Dockerfile
-
   deliver:
     needs: build
     runs-on: ubuntu-18.04
