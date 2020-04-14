@@ -7,11 +7,10 @@ namespace AccountService.Repositories
 {
     public interface IAccountRepository
     {
-        Task<List<Account>> Get();
         Task<Account> Get(string email);
         Task<Account> Get(Guid id);
         Task<Account> Create(Account account);
-        Task Update(Guid id, Account account);
+        Task<Account> Update(Guid id, Account account);
         Task Remove(Guid id);
     }
 }

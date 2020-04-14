@@ -1,4 +1,5 @@
 using AccountService.DatastoreSettings;
+using AccountService.Messaging;
 using AccountService.Repositories;
 using AccountService.Services;
 using Microsoft.AspNetCore.Builder;
@@ -34,6 +35,8 @@ namespace AccountService
 
             services.AddSingleton<IAccountDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<AccountDatabaseSettings>>().Value);
+            
+            services.AddMessagePublisher();
 
             services.AddControllers();
         }
