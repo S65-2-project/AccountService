@@ -9,6 +9,30 @@ on:
    
 
 jobs:
+  build:
+    runs-on: ubuntu-18.04
+    container:
+      image: mcr.microsoft.com/dotnet/core/sdk:3.1.201-bionic
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build
+    - name: Test
+      run: dotnet test
+    - name: Publish
+      run: dotnet publish -c Release -o out
+    - name: Upload release artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: release-artifact
+        path: ./out
+    - name: Upload Dockerfile artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: dockerfile-artifact
+        path: ./Dockerfile
   deliver:
     needs: build
     runs-on: ubuntu-18.04
