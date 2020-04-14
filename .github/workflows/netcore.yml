@@ -4,10 +4,10 @@ name: Push On */** or * branch
 on:
   push:
     branches:
-      - '*'         # matches every branch
-      - '*/*'       # matches every branch containing a single '/'
-      - '!master'	      - '!master'
-      - '!develop'	      - '!develop'
+      - "*"         # matches every branch
+      - "*/*"       # matches every branch containing a single '/'
+      - "!master"   
+      - "!develop"
 
 jobs:
   build:
