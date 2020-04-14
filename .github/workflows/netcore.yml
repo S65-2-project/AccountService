@@ -1,7 +1,13 @@
   
-name: .NET Core
+name: Push On */** or * branch
 
-on: [push]
+on:
+  push:
+    branches:
+      - '*'         # matches every branch
+      - '*/*'       # matches every branch containing a single '/'
+      - '!master'	      - '!master'
+      - '!develop'	      - '!develop'
 
 jobs:
   build:
@@ -28,26 +34,3 @@ jobs:
       with:
         name: dockerfile-artifact
         path: ./Dockerfile
-  deliver:
-    needs: build
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Download release artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: release-artifact
-          path: .
-      - name: Download Dockerfile artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: dockerfile-artifact
-          path: .
-      - name: Deliver Docker image
-        env:
-          CONTAINER_IMAGE: ${{ secrets.ORGANIZATION }}/${{ secrets.REPOSITORY_NAME }}:${{ github.sha }}
-          CONTAINER_IMAGE_LATEST: ${{ secrets.ORGANIZATION }}/${{ secrets.REPOSITORY_NAME }}:latest
-        run: |
-          docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} 
-          docker build -t $CONTAINER_IMAGE -t $CONTAINER_IMAGE_LATEST .
-          docker push $CONTAINER_IMAGE
-          docker push $CONTAINER_IMAGE_LATEST
