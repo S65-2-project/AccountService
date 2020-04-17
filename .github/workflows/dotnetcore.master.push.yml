@@ -16,7 +16,7 @@ jobs:
       # Checkout Git repository
       - uses: actions/checkout@v2
 
-      # Install the depencencies needed for the project
+      # Install the dependencies needed for the project
       - name: Install dependencies
         run: dotnet restore
       
@@ -32,7 +32,7 @@ jobs:
       - name: Publish
         run: dotnet publish -c Release -o release
       
-      # Uploads release folder artifact and Dockerfile artifact to this GitHub workflow for use in the next job
+      # Upload the release folder and Dockerfile artifacts to this GitHub workflow for use in the next job
       - name: Upload release artifact
         uses: actions/upload-artifact@v1
         with:

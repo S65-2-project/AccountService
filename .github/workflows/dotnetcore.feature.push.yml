@@ -16,7 +16,7 @@ jobs:
       # Checkout Git repository
       - uses: actions/checkout@v2
 
-      # Install the depencencies needed for the project
+      # Install the dependencies needed for the project
       - name: Install dependencies
         run: dotnet restore
       
