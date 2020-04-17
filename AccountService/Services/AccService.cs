@@ -7,36 +7,47 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Services
 {
-    public class AccountService : IAccountService
+    public class AccService : IAccService
     {
         private readonly IAccountRepository _repository;
-        private readonly RegexUtils _regexUtils;
+        private readonly IRegexHelper _regexHelper = new RegexHelper();
 
-        public AccountService(IAccountRepository repository)
+        public AccService(IAccountRepository repository)
         {
             this._repository = repository;
         }
 
-        public async Task CreateAccount(string email, string password)
+        public async Task<Account> CreateAccount(string email, string password)
         {
             var acc = await _repository.Get(email);
+
+            if (acc != null)
+                throw new ArgumentException("Email is already in use.");
             
-            //if (acc == null || _regexUtils.IsValidEmail(email) || _regexUtils.IsValidPassword(password)) return;
+            if(!_regexHelper.IsValidEmail(email))
+                throw new ArgumentException("Email is not a valid email.");
             
-            await _repository.Create(new Account()
+            if (!_regexHelper.IsValidPassword(password))
+                throw new ArgumentException("Password doesn't meet the requirements.");
+
+            var newAccount = new Account()
             {
                 Id = Guid.NewGuid(),
                 Email = email,
                 Password = password
-            });
+            };
+
+            await _repository.Create(newAccount);
+            
+            return newAccount.WithoutPassword();
         }
 
         public async Task<Account> UpdateAccount(string email, string password)
         {
-            if (_regexUtils.IsValidEmail(email) || _regexUtils.IsValidPassword(password)) return null;
+            if (_regexHelper.IsValidEmail(email) || _regexHelper.IsValidPassword(password)) return null;
             
             var acc = await GetAccount(email);
-            if (_regexUtils.IsValidPassword(password))
+            if (_regexHelper.IsValidPassword(password))
             {
                 acc.Password = password;
             }

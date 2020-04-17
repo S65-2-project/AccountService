@@ -1,4 +1,5 @@
 using AccountService.DatastoreSettings;
+using AccountService.Helpers;
 using AccountService.Messaging;
 using AccountService.Repositories;
 using AccountService.Services;
@@ -25,8 +26,9 @@ namespace AccountService
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
+            services.AddTransient<IRegexHelper, RegexHelper>();
             
-            services.AddTransient<IAccountService, Services.AccountService>();
+            services.AddTransient<IAccService, Services.AccService>();
             
             services.AddTransient<IAccountRepository, AccountRepository>();
             

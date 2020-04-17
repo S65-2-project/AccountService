@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AccountService.Domain;
+using AccountService.Helpers;
 using AccountService.Models;
 using AccountService.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -11,26 +13,33 @@ namespace AccountService.Controllers
     [Route("[controller]")]
     public class AccountController : ControllerBase
     {
-        private readonly IAccountService _accountService;
+        private readonly IAccService _accService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccService accService)
         {
-            _accountService = accountService;
+            _accService = accService;
         }
 
         [AllowAnonymous]
         [HttpPost("")]
-        public async Task<IActionResult> CreateAccount(CreateAccountModel account)
+        public async Task<IActionResult> CreateAccount(Account account)
         {
-            await _accountService.CreateAccount(account.Email, account.Password);
-            return Ok(account);
+            try
+            {
+                await _accService.CreateAccount(account.Email, account.Password);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            return Ok(account.WithoutPassword());
         }
         
         [AllowAnonymous]
         [HttpGet("")]
         public async Task<IActionResult> GetAccount(string email)
         {
-            var acc = await _accountService.GetAccount(email);
+            var acc = await _accService.GetAccount(email);
             return Ok(acc);
         }
 
@@ -38,7 +47,7 @@ namespace AccountService.Controllers
         [HttpPut("")]
         public async Task<IActionResult> UpdateAccount(string email, UpdateAccountModel account)
         {
-            await _accountService.UpdateAccount(account.Email, account.Password);
+            await _accService.UpdateAccount(account.Email, account.Password);
             return Ok(GetAccount(email));
         }
         
@@ -46,7 +55,7 @@ namespace AccountService.Controllers
         [HttpDelete("")]
         public async Task<IActionResult> DeleteAccount(Account account)
         {
-            await _accountService.DeleteAccount(account.Email);
+            await _accService.DeleteAccount(account.Email);
             return Ok();
         }
 
@@ -54,8 +63,8 @@ namespace AccountService.Controllers
         [HttpPut("Role")]
         public async Task<IActionResult> AddRole(Account account)
         {
-            var acc = await _accountService.GetAccount(account.Email);
-            await _accountService.UpdateRole(acc.Email, account.isDelegate, account.isDelegate);
+            var acc = await _accService.GetAccount(account.Email);
+            await _accService.UpdateRole(acc.Email, account.isDelegate, account.isDelegate);
             return Ok(acc);
         }
     }

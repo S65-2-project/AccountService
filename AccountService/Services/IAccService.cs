@@ -4,9 +4,9 @@ using AccountService.Models;
 
 namespace AccountService.Services
 {
-    public interface IAccountService
+    public interface IAccService
     {
-        Task CreateAccount(string email, string password);
+        Task<Account> CreateAccount(string email, string password);
         Task<Account> UpdateAccount(string email, string password);
         Task<Account> UpdateRole(string email, bool isDelegate, bool isDAppOwner);
         Task<Account> GetAccount(string email);

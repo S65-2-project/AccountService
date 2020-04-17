@@ -23,18 +23,24 @@ namespace AccountServiceTests.Controller
         }
 
         [Fact]
-        public async Task CreateAccountSuccess()
+        public async Task RegisterAccount_ReturnUserSuccess()
         {
-            var accountService = new Mock<IAccountService>();
+            const string email = "test@test.com";
+            const string password = "#$%FGAvaffa4s";
+            
+            var account = new Account()
+            {
+                Email = email,
+                Password = password
+            };
+
+            var accountService = new Mock<IAccService>();
             _accountController = new AccountController(accountService.Object);
 
-            var result = _accountController.CreateAccount(new CreateAccountModel()
-            {
-                Email = "test@test.com", Password = "Ba123xzc2342314!"
-            });
+            var result = await _accountController.CreateAccount(account);
             
             _testOutputHelper.WriteLine(result.ToString());
-            Assert.IsType<OkResult>(result);
+            Assert.IsType<OkObjectResult>(result);
         }
     }
 }

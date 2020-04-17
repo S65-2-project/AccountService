@@ -14,7 +14,7 @@ namespace AccountService.Repositories
     public class AccountRepository : IAccountRepository
     {
         private readonly IMongoCollection<Account> _accounts;
-        private IMessageQueuePublisher _publisher;
+        private readonly IMessageQueuePublisher _publisher;
 
         public AccountRepository(IAccountDatabaseSettings settings, IMessageQueuePublisher publisher)
         {
@@ -37,7 +37,7 @@ namespace AccountService.Repositories
         public async Task<Account> Create(Account account)
         {
             await _accounts.InsertOneAsync(account);
-            var newAccount = new CreateAccountModel {Email = account.Email, Password = account.Password};
+            var newAccount = new CreateAccountModel {Id = account.Id, Email = account.Email, Password = account.Password};
             await _publisher.PublishMessageAsync("AuthenticationService", "RegisterUser", newAccount);
             return account;
         }

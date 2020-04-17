@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace AccountService.Helpers
 {
-    public abstract class RegexUtils
+    public class RegexHelper : IRegexHelper
     {
         public bool IsValidEmail(string email)
         {
@@ -50,6 +50,7 @@ namespace AccountService.Helpers
                 return false;
             }
         }
+        
 
         public bool IsValidPassword(string password)
         {
