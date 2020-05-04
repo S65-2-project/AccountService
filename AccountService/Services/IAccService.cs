@@ -35,7 +35,7 @@ namespace AccountService.Services
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        Task<Account> UpdatePassword(Guid id, UpdateAccountModel model);
+        Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel);
         
         /// <summary>
         /// Returns an account that has this ID

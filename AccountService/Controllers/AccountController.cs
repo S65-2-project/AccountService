@@ -67,11 +67,11 @@ namespace AccountService.Controllers
 
         [AllowAnonymous]
         [HttpPut("UpdatePassword/{id}")]
-        public async Task<IActionResult> UpdatePassword(Guid id, UpdateAccountModel account)
+        public async Task<IActionResult> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
             try
             {
-                return Ok(await _accService.UpdatePassword(id, account));
+                return Ok(await _accService.UpdatePassword(id, passwordModel));
             }
             catch (Exception e)
             {

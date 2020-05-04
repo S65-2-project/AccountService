@@ -68,24 +68,25 @@ namespace AccountService.Services
             account.Token = _tokenGenerator.GenerateJWT(account.Id);
             return account.WithoutPassword();
         }
-        public async Task<Account> UpdatePassword(Guid id, UpdateAccountModel model)
+        
+        public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
-            if (_regexHelper.IsValidPassword(model.Password)) return null;
+            var account = await GetAccount(id);
             
-            var acc = await GetAccount(id);
-            if (_regexHelper.IsValidPassword(model.Password))
+            if (!await _hasher.VerifyHash(passwordModel.OldPassword, account.Salt, account.Password))
+            {
+                throw new ArgumentException("The password is incorrect.");
+            }
+
+            if (_regexHelper.IsValidPassword(passwordModel.NewPassword))
             {
                 //hash the password. 
                 var salt = _hasher.CreateSalt();
-                var hashedPassword = await _hasher.HashPassword(model.Password, salt);
-                acc.Salt = salt;
-                acc.Password = hashedPassword;
+                var hashedPassword = await _hasher.HashPassword(passwordModel.NewPassword, salt);
+                account.Salt = salt;
+                account.Password = hashedPassword;
             }
-            else
-            {
-                return null;
-            }
-            var updatedAccount = await _repository.Update(acc.Id, acc);
+            var updatedAccount = await _repository.Update(account.Id, account);
             return updatedAccount.WithoutPassword();
         }
 
