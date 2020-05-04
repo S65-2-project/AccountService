@@ -13,14 +13,15 @@ namespace AccountService.Services
         //TODO Custom exception for every argument
         private readonly IAccountRepository _repository;
         private readonly IHasher _hasher;
-        private readonly IRegexHelper _regexHelper = new RegexHelper();
+        private readonly IRegexHelper _regexHelper;
         private readonly IJWTokenGenerator _tokenGenerator;
 
-        public AccService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator)
+        public AccService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator, IRegexHelper regexHelper)
         {
             _repository = repository;
             _hasher = hasher;
             _tokenGenerator = tokenGenerator;
+            _regexHelper = regexHelper;
         }
 
         public async Task<Account> CreateAccount(CreateAccountModel model)
