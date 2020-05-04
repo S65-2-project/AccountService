@@ -6,6 +6,7 @@ namespace AccountService.Helpers
     {
         public static Account WithoutPassword(this Account account) {
             account.Password = null;
+            account.Salt = null;
             return account;
         }
     }

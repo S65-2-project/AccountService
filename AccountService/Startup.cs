@@ -44,7 +44,11 @@ namespace AccountService
             services.AddSingleton<IAccountDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<AccountDatabaseSettings>>().Value);
             
+            var appSettingsSection = Configuration.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingsSection);
             
+            services.AddTransient<IJWTokenGenerator, JWTokenGenerator>();
+
             services.AddMessagePublisher();
 
             services.AddControllers();

@@ -14,11 +14,13 @@ namespace AccountService.Services
         private readonly IAccountRepository _repository;
         private readonly IHasher _hasher;
         private readonly IRegexHelper _regexHelper = new RegexHelper();
+        private readonly IJWTokenGenerator _tokenGenerator;
 
-        public AccService(IAccountRepository repository, IHasher hasher)
+        public AccService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator)
         {
             _repository = repository;
             _hasher = hasher;
+            _tokenGenerator = tokenGenerator;
         }
 
         public async Task<Account> CreateAccount(CreateAccountModel model)
@@ -52,6 +54,20 @@ namespace AccountService.Services
             return newAccount.WithoutPassword();
         }
 
+
+        public async Task<Account> Login(LoginModel loginModel)
+        {
+            var account = _repository.Get(loginModel.Email).Result;
+            if (account == null) throw new ArgumentException("A user with this email address does not exist. ");
+
+            if (!await _hasher.VerifyHash(loginModel.Password, account.Salt, account.Password))
+            {
+                throw new ArgumentException("The password is incorrect.");
+            }
+
+            account.Token = _tokenGenerator.GenerateJWT(account.Id);
+            return account.WithoutPassword();
+        }
         public async Task<Account> UpdatePassword(Guid id, UpdateAccountModel model)
         {
             if (_regexHelper.IsValidPassword(model.Password)) return null;
@@ -69,8 +85,8 @@ namespace AccountService.Services
             {
                 return null;
             }
-            
-            return await _repository.Update(acc.Id, acc);
+            var updatedAccount = await _repository.Update(acc.Id, acc);
+            return updatedAccount.WithoutPassword();
         }
 
         public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model)
@@ -82,19 +98,24 @@ namespace AccountService.Services
             acc.isDelegate = model.isDelegate;
             acc.isDAppOwner = model.isDelegate;
             
-            return await _repository.Update(id, acc);
+            
+            var updatedAccount = await _repository.Update(id, acc);
+            return updatedAccount.WithoutPassword();
         }
 
         public async Task<Account> GetAccount(Guid id)
         {
             var acc = await _repository.Get(id);
-            return acc;
+            return acc.WithoutPassword();
         }
 
-        public async Task DeleteAccount(string email)
+        public async Task DeleteAccount(Guid id)
         {
-            var acc = await _repository.Get(email);
-            await _repository.Remove(acc.Id);
+            if (await _repository.Get(id) != null)
+            {
+                await _repository.Remove(id);
+            }
+            
         }
     }
 }

@@ -17,5 +17,6 @@ namespace AccountService.Domain
              public byte[] Salt { get; set; }
              public bool isDAppOwner { get; set; }
              public bool isDelegate { get; set; }
-         }
+             public string Token { get; set; }
+    }
 }

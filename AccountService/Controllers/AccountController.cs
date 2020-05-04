@@ -22,6 +22,21 @@ namespace AccountService.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
+        {
+            try
+            {
+                return Ok(await _accService.Login(loginModel));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+
+        [AllowAnonymous]
         [HttpPost("")]
         public async Task<IActionResult> CreateAccount([FromBody]CreateAccountModel accountModel)
         {
@@ -35,7 +50,7 @@ namespace AccountService.Controllers
             }
         }
         
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAccount(Guid id)
         {
@@ -50,8 +65,8 @@ namespace AccountService.Controllers
             
         }
 
-        [Authorize]
-        [HttpGet("UpdatePassword/{id}")]
+        [AllowAnonymous]
+        [HttpPut("UpdatePassword/{id}")]
         public async Task<IActionResult> UpdatePassword(Guid id, UpdateAccountModel account)
         {
             try
@@ -64,7 +79,7 @@ namespace AccountService.Controllers
             }
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAccount(Guid id, [FromBody]UpdateAccountModel account)
         {
@@ -79,13 +94,13 @@ namespace AccountService.Controllers
             
         }
         
-        [Authorize]
-        [HttpDelete("")]
-        public async Task<IActionResult> DeleteAccount([FromBody]DeleteAccountModel account)
+        [AllowAnonymous]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAccount(Guid id)
         {
             try
             {
-                await _accService.DeleteAccount(account.Email);
+                await _accService.DeleteAccount(id);
                 return Ok();
             }
             catch (Exception e)
