@@ -37,8 +37,6 @@ namespace AccountService.Repositories
         public async Task<Account> Create(Account account)
         {
             await _accounts.InsertOneAsync(account);
-            var newAccount = new CreateAccountModel {Id = account.Id, Email = account.Email, Password = account.Password};
-            await _publisher.PublishMessageAsync("AuthenticationService", "RegisterUser", newAccount);
             return account;
         }
 

@@ -3,6 +3,9 @@ using AccountService.Helpers;
 using AccountService.Messaging;
 using AccountService.Repositories;
 using AccountService.Services;
+using AccountService.Helpers;
+using AccountService.Repositories;
+using AccountService.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +29,9 @@ namespace AccountService
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
+            
+            services.AddTransient<IHasher, Hasher>();
+
             services.AddTransient<IRegexHelper, RegexHelper>();
             
             services.AddTransient<IAccService, Services.AccService>();
@@ -37,6 +43,7 @@ namespace AccountService
 
             services.AddSingleton<IAccountDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<AccountDatabaseSettings>>().Value);
+            
             
             services.AddMessagePublisher();
 
