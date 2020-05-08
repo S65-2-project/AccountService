@@ -72,7 +72,7 @@ namespace AccountService.Services
         
         public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
-            var account = await GetAccount(id);
+            var account = await GetAccountWithEcryptedPassword(id);
             
             if (!await _hasher.VerifyHash(passwordModel.OldPassword, account.Salt, account.Password))
             {
@@ -87,7 +87,10 @@ namespace AccountService.Services
                 account.Salt = salt;
                 account.Password = hashedPassword;
             }
-            var updatedAccount = await _repository.Update(account.Id, account);
+            
+            await _repository.Update(account.Id, account);
+            var updatedAccount = await _repository.Get(id);
+            
             return updatedAccount.WithoutPassword();
         }
 
@@ -109,6 +112,12 @@ namespace AccountService.Services
         {
             var acc = await _repository.Get(id);
             return acc.WithoutPassword();
+        }
+        
+        private async Task<Account> GetAccountWithEcryptedPassword(Guid id)
+        {
+            var acc = await _repository.Get(id);
+            return acc;
         }
 
         public async Task DeleteAccount(Guid id)

@@ -8,6 +8,7 @@ using AccountService.Repositories;
 using AccountService.Services;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
+using NuGet.Frameworks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -165,35 +166,177 @@ namespace AccountServiceTests.ServiceTests
                 Salt = salt
             };
             
+            
+            var updatedAccount = new Account
+            {
+                Id = id,
+                Email = email,
+                Password = encryptedPassword,
+                Salt = salt
+            };
+            
             var passwordModel = new ChangePasswordModel
             {
-                OldPassword =  "MyV3rysecurepw!!2",
+                OldPassword =  password,
                 NewPassword = "Myn3westV3ryS3cur3password12345!@"
             };
             
-            _repository.Setup(x => x.Get(email)).ReturnsAsync(account);
+            
+            _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
+            _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
             _hasher.Setup(x => x.VerifyHash(password, salt, encryptedPassword)).ReturnsAsync(true);
             _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
 
             var result = await _accountService.UpdatePassword(account.Id, passwordModel);
 
-            Assert.Equal(result.Password.ToString() , passwordModel.NewPassword);
-            
+            Assert.NotNull(result);            
         }
+
+        [Fact]
+        public async Task UpdatePasswordWrongPassword()
+        {
+            var id = Guid.NewGuid();
+            const string email = "iemand@gmail.com";
+            const string password = "MyV3rysecurepw!!2";
+            var encryptedPassword = Encoding.ASCII.GetBytes(password);
+            var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
+            const string token = "zqawsexdctvbyunimo";
+            
+            var account = new Account
+            {
+                Id = id,
+                Email = email,
+                Password = encryptedPassword,
+                Salt = salt
+            };
+            
+            
+            var updatedAccount = new Account
+            {
+                Id = id,
+                Email = email,
+                Password = encryptedPassword,
+                Salt = salt
+            };
+            
+            var passwordModel = new ChangePasswordModel
+            {
+                OldPassword =  "NietHetGoedeW4chtwoord12!",
+                NewPassword = "Myn3westV3ryS3cur3password12345!@"
+            };
+            
+            
+            _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
+            _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
+            _hasher.Setup(x => x.VerifyHash(password, salt, encryptedPassword)).ReturnsAsync(true);
+            _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
+
+            var result =
+                await Assert.ThrowsAsync<ArgumentException>(() =>
+                    _accountService.UpdatePassword(account.Id, passwordModel));
+
+            Assert.NotNull(result);
+            Assert.IsType<ArgumentException>(result);
+
+        }
+        
+        
         [Fact]
         public async Task UpdateAccountSuccess()
         {
+            var id = Guid.NewGuid();
+            const string emailOld = "iemand@gmail.com";
+            const string emailNew = "mijn@nieuwe.email";
             
+            var account = new Account
+            {
+                Id = id,
+                Email = emailOld,
+                isDelegate = true,
+                isDAppOwner = false
+            };
+
+            var update = new UpdateAccountModel
+            {
+                Email = emailNew,
+                isDelegate = false,
+                isDAppOwner = true
+            };
+            
+            var updatedAccount = new Account
+            {
+                Id = account.Id,
+                Email = update.Email,
+                isDelegate = update.isDelegate,
+                isDAppOwner = update.isDAppOwner
+            };
+
+            _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
+            _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
+            
+
+            var result = await _accountService.UpdateAccount(id, update);
+            
+            Assert.NotEqual(emailOld, result.Email);
+            Assert.False(result.isDelegate);
+            Assert.True(result.isDAppOwner);
+
         }
         [Fact]
         public async Task GetAccountSuccess()
         {
+            var id = Guid.NewGuid();
+            const string email = "iemand@gmail.com";
+            const string password = "MyV3rysecurepw!!2";
+            var encryptedPassword = Encoding.ASCII.GetBytes(password);
+            var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
+            const string token = "zqawsexdctvbyunimo";
             
+            var account = new Account
+            {
+                Id = id,
+                Email = email,
+                Password = encryptedPassword,
+                Salt = salt
+            };
+            
+            _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
+
+            var result = await _accountService.GetAccount(account.Id);
+            
+            Assert.Equal(id, result.Id);
+            Assert.Equal(account.Email, result.Email);
+            Assert.Null(result.Password);
+            Assert.Null(result.Salt);
+            
+
         }
         [Fact]
-        public async Task DeleteAccountSuccess()
+        public async Task GetAccountInvalidId()
         {
+            var id = Guid.NewGuid();
+            const string email = "iemand@gmail.com";
+            const string password = "MyV3rysecurepw!!2";
+            var encryptedPassword = Encoding.ASCII.GetBytes(password);
+            var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
+            const string token = "zqawsexdctvbyunimo";
             
+            var account = new Account
+            {
+                Id = id,
+                Email = email,
+                Password = encryptedPassword,
+                Salt = salt
+            };
+            
+            _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
+
+            var result =
+                await Assert.ThrowsAsync<NullReferenceException>(() =>
+                    _accountService.GetAccount(Guid.Empty));
+
+            Assert.NotNull(result);
+            Assert.IsType<NullReferenceException>(result);
         }
     }
 }
