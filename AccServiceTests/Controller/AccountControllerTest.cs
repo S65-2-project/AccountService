@@ -24,7 +24,7 @@ namespace AccountServiceTests.Controller
         }
 
         [Fact]
-        public async Task InsertTest()
+        public async Task CreateAccountTest()
         {
             const string email = "test@test.nl";
             const string password = "MyV3ryS3cureP!W!";

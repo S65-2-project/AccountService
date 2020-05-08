@@ -14,11 +14,9 @@ namespace AccountService.Repositories
     public class AccountRepository : IAccountRepository
     {
         private readonly IMongoCollection<Account> _accounts;
-        private readonly IMessageQueuePublisher _publisher;
 
-        public AccountRepository(IAccountDatabaseSettings settings, IMessageQueuePublisher publisher)
+        public AccountRepository(IAccountDatabaseSettings settings)
         {
-            _publisher = publisher;
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
 
