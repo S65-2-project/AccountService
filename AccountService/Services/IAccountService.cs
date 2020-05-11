@@ -5,7 +5,7 @@ using AccountService.Models;
 
 namespace AccountService.Services
 {
-    public interface IAccService
+    public interface IAccountService
     {
         /// <summary>
         /// Creates an account 

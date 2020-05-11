@@ -14,22 +14,22 @@ using Xunit.Abstractions;
 
 namespace AccountServiceTests.ServiceTests
 {
-    public class AccServiceTest
+    public class AccountServiceTest
     {
-        private readonly IAccService _accountService;
+        private readonly IAccountService _accountService;
         private readonly Mock<IAccountRepository> _repository;
         private readonly Mock<IHasher> _hasher;
         private readonly Mock<IJWTokenGenerator> _jwtGenerator;
         private readonly Mock<IRegexHelper> _regexHelper;
 
 
-        public AccServiceTest()
+        public AccountServiceTest()
         {
             _jwtGenerator = new Mock<IJWTokenGenerator>();
             _hasher = new Mock<IHasher>();
             _repository = new Mock<IAccountRepository>();
             _regexHelper = new Mock<IRegexHelper>();
-            _accountService = new AccService(_repository.Object, _hasher.Object, _jwtGenerator.Object,
+            _accountService = new AccountService.Services.AccountService(_repository.Object, _hasher.Object, _jwtGenerator.Object,
                 _regexHelper.Object);
 
         }

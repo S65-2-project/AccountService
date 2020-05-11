@@ -16,10 +16,10 @@ namespace AccountServiceTests.Controller
     public class AccountControllerTest
     {
         private readonly AccountController _accountController;
-        private readonly Mock<IAccService> _accountService;
+        private readonly Mock<IAccountService> _accountService;
         public AccountControllerTest( )
         {
-            _accountService = new Mock<IAccService>();
+            _accountService = new Mock<IAccountService>();
             _accountController = new AccountController(_accountService.Object);
         }
 

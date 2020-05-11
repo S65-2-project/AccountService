@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Services
 {
-    public class AccService : IAccService
+    public class AccountService : IAccountService
     {
         //TODO Custom exception for every argument
         private readonly IAccountRepository _repository;
@@ -16,7 +16,7 @@ namespace AccountService.Services
         private readonly IRegexHelper _regexHelper;
         private readonly IJWTokenGenerator _tokenGenerator;
 
-        public AccService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator, IRegexHelper regexHelper)
+        public AccountService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator, IRegexHelper regexHelper)
         {
             _repository = repository;
             _hasher = hasher;
