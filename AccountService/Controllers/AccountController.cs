@@ -62,7 +62,7 @@ namespace AccountService.Controllers
             
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpPut("UpdatePassword/{id}")]
         public async Task<IActionResult> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
@@ -76,7 +76,7 @@ namespace AccountService.Controllers
             }
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAccount(Guid id, [FromBody]UpdateAccountModel account)
         {
@@ -98,7 +98,7 @@ namespace AccountService.Controllers
             
         }
         
-        [AllowAnonymous]
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(Guid id)
         {
