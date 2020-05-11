@@ -14,11 +14,11 @@ namespace AccountService.Controllers
     [Route("[controller]")]
     public class AccountController : ControllerBase
     {
-        private readonly IAccService _accService;
+        private readonly IAccountService _accountService;
 
-        public AccountController(IAccService accService)
+        public AccountController(IAccountService accountService)
         {
-            _accService = accService;
+            _accountService = accountService;
         }
 
         [AllowAnonymous]
@@ -27,7 +27,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accService.Login(loginModel));
+                return Ok(await _accountService.Login(loginModel));
             }
             catch (Exception e)
             {
@@ -42,7 +42,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accService.CreateAccount(accountModel));
+                return Ok(await _accountService.CreateAccount(accountModel));
             }
             catch (Exception e)
             {
@@ -56,7 +56,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accService.GetAccount(id));
+                return Ok(await _accountService.GetAccount(id));
             }
             catch (Exception e)
             {
@@ -71,7 +71,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accService.UpdatePassword(id, passwordModel));
+                return Ok(await _accountService.UpdatePassword(id, passwordModel));
             }
             catch (Exception e)
             {
@@ -85,7 +85,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accService.UpdateAccount(id, account));
+                return Ok(await _accountService.UpdateAccount(id, account));
             }
             catch (Exception e)
             {
@@ -100,7 +100,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                await _accService.DeleteAccount(id);
+                await _accountService.DeleteAccount(id);
                 return Ok();
             }
             catch (Exception e)

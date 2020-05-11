@@ -34,7 +34,7 @@ namespace AccountService
 
             services.AddTransient<IRegexHelper, RegexHelper>();
             
-            services.AddTransient<IAccService, Services.AccService>();
+            services.AddTransient<IAccountService, Services.AccountService>();
             
             services.AddTransient<IAccountRepository, AccountRepository>();
             
