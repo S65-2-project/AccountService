@@ -1,5 +1,4 @@
 ﻿using System;
-using AccountService.Domain;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

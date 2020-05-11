@@ -1,5 +1,4 @@
 ﻿using System;
-using AccountService.Domain;
 
 namespace AccountService.Helpers
 {

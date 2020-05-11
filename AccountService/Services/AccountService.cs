@@ -4,7 +4,6 @@ using AccountService.Domain;
 using AccountService.Helpers;
 using AccountService.Models;
 using AccountService.Repositories;
-using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Services
 {
@@ -26,9 +25,9 @@ namespace AccountService.Services
 
         public async Task<Account> CreateAccount(CreateAccountModel model)
         {
-            var acc = await _repository.Get(model.Email);
+            var account = await _repository.Get(model.Email);
 
-            if (acc != null)
+            if (account != null)
                 throw new ArgumentException("Email is already in use.");
             
             if(!_regexHelper.IsValidEmail(model.Email))
@@ -50,9 +49,9 @@ namespace AccountService.Services
                 Salt = salt
             };
 
-            await _repository.Create(newAccount);
+            newAccount = await _repository.Create(newAccount);
             
-            return newAccount.WithoutPassword();
+            return newAccount.WithoutSensitiveData();
         }
 
 
@@ -67,7 +66,7 @@ namespace AccountService.Services
             }
 
             account.Token = _tokenGenerator.GenerateJWT(account.Id);
-            return account.WithoutPassword();
+            return account.WithoutSensitiveData();
         }
         
         public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
@@ -88,45 +87,39 @@ namespace AccountService.Services
                 account.Password = hashedPassword;
             }
             
-            await _repository.Update(account.Id, account);
-            var updatedAccount = await _repository.Get(id);
+            var updatedAccount = await _repository.Update(account.Id, account);
             
-            return updatedAccount.WithoutPassword();
+            return updatedAccount.WithoutSensitiveData();
         }
 
         public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model)
         {
-            if (_regexHelper.IsValidEmail(model.Email)) return null;
+            if (_regexHelper.IsValidEmail(model.Email)) return null; //TODO throw exception if invalid.
 
-            var acc = await GetAccount(id);
-            acc.Email = model.Email;
-            acc.isDelegate = model.isDelegate;
-            acc.isDAppOwner = model.isDelegate;
+            var account = await GetAccountWithEcryptedPassword(id);
+            account.Email = model.Email;
+            account.isDelegate = model.isDelegate;
+            account.isDAppOwner = model.isDelegate;
             
             
-            var updatedAccount = await _repository.Update(id, acc);
-            return updatedAccount.WithoutPassword();
+            var updatedAccount = await _repository.Update(id, account);
+            return updatedAccount.WithoutSensitiveData();
         }
 
-        public async Task<Account> GetAccount(Guid id)
+        public async Task<Account> GetAccountWithoutPassword(Guid id)
         {
-            var acc = await _repository.Get(id);
-            return acc.WithoutPassword();
+            var account = await _repository.Get(id);
+            return account.WithoutSensitiveData();
         }
         
         private async Task<Account> GetAccountWithEcryptedPassword(Guid id)
         {
-            var acc = await _repository.Get(id);
-            return acc;
+            return await _repository.Get(id);
         }
 
         public async Task DeleteAccount(Guid id)
         {
-            if (await _repository.Get(id) != null)
-            {
-                await _repository.Remove(id);
-            }
-            
+            if (await _repository.Get(id) != null) await _repository.Remove(id);
         }
     }
 }

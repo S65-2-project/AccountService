@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
 using AccountService.Controllers;
 using AccountService.Domain;
@@ -8,8 +7,6 @@ using AccountService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace AccountServiceTests.Controller
 {
@@ -17,7 +14,8 @@ namespace AccountServiceTests.Controller
     {
         private readonly AccountController _accountController;
         private readonly Mock<IAccountService> _accountService;
-        public AccountControllerTest( )
+
+        public AccountControllerTest()
         {
             _accountService = new Mock<IAccountService>();
             _accountController = new AccountController(_accountService.Object);
@@ -27,16 +25,16 @@ namespace AccountServiceTests.Controller
         public async Task CreateAccountTest()
         {
             const string email = "test@test.nl";
-            const string password = "MyV3ryS3cureP!W!";
-            var encryptedPassword = Encoding.ASCII.GetBytes(password);
+            const string password = "MyV3ryS3cureP";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "testjwttoken";
 
             var account = new Account
             {
                 Id = Guid.NewGuid(),
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 isDelegate = false,
                 isDAppOwner = false,
                 Salt = salt,
@@ -51,13 +49,11 @@ namespace AccountServiceTests.Controller
 
             _accountService.Setup(x => x.CreateAccount(createAccountModel)).ReturnsAsync(account);
 
-            var result = await _accountController.CreateAccount(createAccountModel);
-            var data = result as ObjectResult;
-            
+            var result = await _accountController.CreateAccount(createAccountModel) as ObjectResult;
+
             Assert.NotNull(result);
-            Assert.NotNull(data);
             Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(account.Id, ((Account) data.Value).Id);
+            Assert.Equal(account.Id, ((Account) result.Value).Id);
         }
 
         [Fact]
@@ -65,15 +61,15 @@ namespace AccountServiceTests.Controller
         {
             const string email = "test@test.nl";
             const string password = "MyV3ryS3cureP!W!";
-            var encryptedPassword = Encoding.ASCII.GetBytes(password);
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "testjwttoken";
 
             var account = new Account
             {
                 Id = Guid.NewGuid(),
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 isDelegate = false,
                 isDAppOwner = false,
                 Salt = salt,
@@ -90,7 +86,7 @@ namespace AccountServiceTests.Controller
 
             var result = await _accountController.Login(loginModel);
             var data = result as ObjectResult;
-            
+
             Assert.NotNull(result);
             Assert.NotNull(data);
             Assert.IsType<OkObjectResult>(result);
@@ -112,10 +108,8 @@ namespace AccountServiceTests.Controller
             _accountService.Setup(x => x.Login(loginModel))
                 .Throws<ArgumentException>();
 
-            //Act
             var result = await _accountController.Login(loginModel);
 
-            //Assert
             Assert.NotNull(result);
             Assert.IsType<BadRequestObjectResult>(result);
         }

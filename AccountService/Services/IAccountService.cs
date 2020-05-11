@@ -11,14 +11,14 @@ namespace AccountService.Services
         /// Creates an account 
         /// </summary>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>Account</returns>
         Task<Account> CreateAccount(CreateAccountModel model);
         
         /// <summary>
-        /// Logs a user in if specified data is correct. Returns a JWToken
+        /// Logs a user in if specified data is correct.
         /// </summary>
         /// <param name="loginModel"></param>
-        /// <returns></returns>
+        /// <returns>JWToken</returns>
         Task<Account> Login(LoginModel loginModel);
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace AccountService.Services
         /// </summary>
         /// <param name="id"></param>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>Account</returns>
         Task<Account> UpdateAccount(Guid id, UpdateAccountModel model);
         
         /// <summary>
@@ -34,15 +34,15 @@ namespace AccountService.Services
         /// </summary>
         /// <param name="id"></param>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>Account</returns>
         Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel);
         
         /// <summary>
-        /// Returns an account that has this ID
+        /// Get an account that has this ID
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
-        Task<Account> GetAccount(Guid id);
+        /// <returns>Account</returns>
+        Task<Account> GetAccountWithoutPassword(Guid id);
         
         /// <summary>
         /// Removes an account

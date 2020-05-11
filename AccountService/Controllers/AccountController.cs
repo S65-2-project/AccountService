@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AccountService.Domain;
-using AccountService.Helpers;
 using AccountService.Models;
 using AccountService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RabbitMQ.Client.Impl;
 
 namespace AccountService.Controllers
 {
@@ -56,7 +53,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accountService.GetAccount(id));
+                return Ok(await _accountService.GetAccountWithoutPassword(id));
             }
             catch (Exception e)
             {
@@ -85,7 +82,14 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accountService.UpdateAccount(id, account));
+                //TODO Custom exception aanmaken voor deze methode.
+                var result = await _accountService.UpdateAccount(id, account);
+                
+                if (result == null)
+                {
+                    return BadRequest("email invalid");
+                }
+                return Ok(result);
             }
             catch (Exception e)
             {
