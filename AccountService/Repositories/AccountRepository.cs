@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AccountService.DatastoreSettings;
 using AccountService.Domain;
-using AccountService.Messaging;
-using AccountService.Models;
 using MongoDB.Driver;
-using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AccountService.Repositories
 {
@@ -40,7 +36,7 @@ namespace AccountService.Repositories
 
         public async Task<Account> Update(Guid id, Account account)
         {
-            await _accounts.ReplaceOneAsync(f => f == account, account);
+            await _accounts.ReplaceOneAsync(f => f.Id == id, account);
             return account;
         }
 
