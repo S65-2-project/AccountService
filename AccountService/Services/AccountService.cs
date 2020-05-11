@@ -94,7 +94,7 @@ namespace AccountService.Services
 
         public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model)
         {
-            if (_regexHelper.IsValidEmail(model.Email)) return null; //TODO throw exception if invalid.
+            if (!_regexHelper.IsValidEmail(model.Email)) return null; //TODO throw exception if invalid.
 
             var account = await GetAccountWithEcryptedPassword(id);
             account.Email = model.Email;
