@@ -10,7 +10,6 @@ namespace AccountService.Services
 {
     public class AccountService : IAccountService
     {
-        //TODO Custom exception for every argument
         private readonly IAccountRepository _repository;
         private readonly IHasher _hasher;
         private readonly IRegexHelper _regexHelper;

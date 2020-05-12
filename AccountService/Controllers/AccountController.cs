@@ -87,7 +87,6 @@ namespace AccountService.Controllers
         {
             try
             {
-                //TODO Custom exception aanmaken voor deze methode.
                 var result = await _accountService.UpdateAccount(id, account);
                 
                 if (result == null)
