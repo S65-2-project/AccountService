@@ -18,9 +18,7 @@ jobs:
 
       # Decrypt the gpg encrypted config files
       - name: Decrypt the gpg encrypted config files
-        run: ./.github/scripts/decrypt_gpg_passphrase.sh
-        env:
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPRHASE}}
+        run: gpg --quiet --batch --yes --passphrase="${{ secrets.GPG_PASSPHRASE }}" --output ./AccountService/appsettings.json --decrypt ./AccountService/appsettings.json.gpg
 
       # Install the dependencies needed for the project
       - name: Install dependencies
