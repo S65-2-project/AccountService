@@ -112,7 +112,7 @@ namespace AccountService.Services
         {
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
             
-            var email = _repository.Get(model.Email);
+            var email = await _repository.Get(model.Email);
             if (email != null)
             {
                 throw new EmailAlreadyExistsException();
