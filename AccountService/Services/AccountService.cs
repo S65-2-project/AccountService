@@ -105,7 +105,7 @@ namespace AccountService.Services
             var account = await _repository.Get(id);
             account.Email = model.Email;
             account.isDelegate = model.isDelegate;
-            account.isDAppOwner = model.isDelegate;
+            account.isDAppOwner = model.isDAppOwner;
             
             var updatedAccount = await _repository.Update(id, account);
             if (updatedAccount == null) throw new AccountNotFoundException();
