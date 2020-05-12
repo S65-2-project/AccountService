@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AccountService.Domain;
+using AccountService.Exceptions;
 using AccountService.Helpers;
 using AccountService.Models;
 using AccountService.Repositories;
@@ -15,7 +16,8 @@ namespace AccountService.Services
         private readonly IRegexHelper _regexHelper;
         private readonly IJWTokenGenerator _tokenGenerator;
 
-        public AccountService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator, IRegexHelper regexHelper)
+        public AccountService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator,
+            IRegexHelper regexHelper)
         {
             _repository = repository;
             _hasher = hasher;
@@ -28,18 +30,18 @@ namespace AccountService.Services
             var account = await _repository.Get(model.Email);
 
             if (account != null)
-                throw new ArgumentException("Email is already in use.");
-            
-            if(!_regexHelper.IsValidEmail(model.Email))
-                throw new ArgumentException("Email is not a valid email.");
-            
+                throw new EmailAlreadyExistsException();
+
+            if (!_regexHelper.IsValidEmail(model.Email))
+                throw new InvalidEmailException();
+
             if (!_regexHelper.IsValidPassword(model.Password))
-                throw new ArgumentException("Password doesn't meet the requirements.");
-            
+                throw new InvalidPasswordException("Password does not meet the minimum requirements.");
+
             //hash the password. 
             var salt = _hasher.CreateSalt();
             var hashedPassword = await _hasher.HashPassword(model.Password, salt);
-            
+
             //Create new User object and send to repository
             var newAccount = new Account()
             {
@@ -50,11 +52,10 @@ namespace AccountService.Services
             };
 
             newAccount = await _repository.Create(newAccount);
-            
+
             return newAccount.WithoutSensitiveData();
         }
-
-
+        
         public async Task<Account> Login(LoginModel loginModel)
         {
             var account = _repository.Get(loginModel.Email).Result;
@@ -62,64 +63,80 @@ namespace AccountService.Services
 
             if (!await _hasher.VerifyHash(loginModel.Password, account.Salt, account.Password))
             {
-                throw new ArgumentException("The password is incorrect.");
+                throw new IncorrectPasswordException();
             }
 
             account.Token = _tokenGenerator.GenerateJWT(account.Id);
             return account.WithoutSensitiveData();
         }
-        
+
         public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
-            var account = await GetAccountWithEcryptedPassword(id);
+            var account = await GetAccountWithEncryptedPassword(id);
+
+            if (account == null)
+            {
+                throw new AccountNotFoundException();
+            }
             
             if (!await _hasher.VerifyHash(passwordModel.OldPassword, account.Salt, account.Password))
             {
-                throw new ArgumentException("The password is incorrect.");
+                throw new IncorrectPasswordException();
             }
 
-            if (_regexHelper.IsValidPassword(passwordModel.NewPassword))
+            if (!_regexHelper.IsValidPassword(passwordModel.NewPassword))
             {
-                //hash the password. 
-                var salt = _hasher.CreateSalt();
-                var hashedPassword = await _hasher.HashPassword(passwordModel.NewPassword, salt);
-                account.Salt = salt;
-                account.Password = hashedPassword;
+                throw new InvalidPasswordException("The new password does not meet the requirements.");
             }
-            
+
+            //hash the password. 
+            var salt = _hasher.CreateSalt();
+            var hashedPassword = await _hasher.HashPassword(passwordModel.NewPassword, salt);
+            account.Salt = salt;
+            account.Password = hashedPassword;
             var updatedAccount = await _repository.Update(account.Id, account);
-            
+
             return updatedAccount.WithoutSensitiveData();
         }
 
         public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model)
         {
-            if (!_regexHelper.IsValidEmail(model.Email)) return null; //TODO throw exception if invalid.
+            if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
 
-            var account = await GetAccountWithEcryptedPassword(id);
+            var account = await GetAccountWithEncryptedPassword(id);
             account.Email = model.Email;
             account.isDelegate = model.isDelegate;
             account.isDAppOwner = model.isDelegate;
             
-            
             var updatedAccount = await _repository.Update(id, account);
+            if (updatedAccount == null) throw new AccountNotFoundException();
             return updatedAccount.WithoutSensitiveData();
         }
 
         public async Task<Account> GetAccountWithoutPassword(Guid id)
         {
             var account = await _repository.Get(id);
+            if (account == null)
+            {
+                throw new AccountNotFoundException();
+            }
+
             return account.WithoutSensitiveData();
         }
-        
-        private async Task<Account> GetAccountWithEcryptedPassword(Guid id)
+
+        private async Task<Account> GetAccountWithEncryptedPassword(Guid id)
         {
             return await _repository.Get(id);
         }
 
         public async Task DeleteAccount(Guid id)
         {
-            if (await _repository.Get(id) != null) await _repository.Remove(id);
+            if (await _repository.Get(id) == null)
+            {
+                throw new AccountNotFoundException();
+            }
+            
+            await _repository.Remove(id);
         }
     }
 }
