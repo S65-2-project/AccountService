@@ -8,16 +8,16 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AccountService.Helpers
 {
-    public class JWTokenGenerator : IJWTokenGenerator
+    public class TokenGenerator : ITokenGenerator
     {
         private readonly AppSettings _appSettings;
 
-        public JWTokenGenerator(IOptions<AppSettings> appsettings)
+        public TokenGenerator(IOptions<AppSettings> appSettings)
         {
-            _appSettings = appsettings.Value;
+            _appSettings = appSettings.Value;
         }
 
-        public string GenerateJWT(Guid id)
+        public string GenerateJwt(Guid id)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.SecretJWT);

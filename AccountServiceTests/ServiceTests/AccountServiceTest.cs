@@ -16,12 +16,12 @@ namespace AccountServiceTests.ServiceTests
         private readonly IAccountService _accountService;
         private readonly Mock<IAccountRepository> _repository;
         private readonly Mock<IHasher> _hasher;
-        private readonly Mock<IJWTokenGenerator> _jwtGenerator;
+        private readonly Mock<ITokenGenerator> _jwtGenerator;
         private readonly Mock<IRegexHelper> _regexHelper;
 
         public AccountServiceTest()
         {
-            _jwtGenerator = new Mock<IJWTokenGenerator>();
+            _jwtGenerator = new Mock<ITokenGenerator>();
             _hasher = new Mock<IHasher>();
             _repository = new Mock<IAccountRepository>();
             _regexHelper = new Mock<IRegexHelper>();
@@ -39,13 +39,13 @@ namespace AccountServiceTests.ServiceTests
             const string email = "iemand@gmail.com";
             const string password = "MyV3rysecurepw!!2";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
-            var encryptedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "afdsafdsafsda";
 
             var account = new Account
             {
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt,
             };
 
@@ -57,7 +57,7 @@ namespace AccountServiceTests.ServiceTests
 
             _repository.Setup(x => x.Get(createModel.Email)).ReturnsAsync((Account) null);
             _hasher.Setup(x => x.CreateSalt()).Returns(salt);
-            _hasher.Setup(x => x.HashPassword(password, salt)).ReturnsAsync(encryptedPassword);
+            _hasher.Setup(x => x.HashPassword(password, salt)).ReturnsAsync(hashedPassword);
             _repository.Setup(x => x.Create(It.IsAny<Account>())).ReturnsAsync(account);
             _regexHelper.Setup(x => x.IsValidEmail(createModel.Email)).Returns(true);
             _regexHelper.Setup(x => x.IsValidPassword(createModel.Password)).Returns(true);
@@ -65,7 +65,7 @@ namespace AccountServiceTests.ServiceTests
             var result = await _accountService.CreateAccount(createModel);
 
             Assert.Equal(account.Email, result.Email);
-            Assert.NotNull(result.Id);
+            Assert.NotEqual(Guid.Empty, result.Id);
             Assert.Null(result.Password);
             Assert.Null(result.Salt);
             Assert.NotNull(result);
@@ -78,14 +78,14 @@ namespace AccountServiceTests.ServiceTests
             const string email = "iemand@gmail.com";
             const string password = "MyV3rysecurepw!!2";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
-            var encryptedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "zqawsexdctvbyunimo";
 
             var account = new Account
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 
@@ -95,8 +95,8 @@ namespace AccountServiceTests.ServiceTests
                 Password = password
             };
             _repository.Setup(x => x.Get(email)).ReturnsAsync(account);
-            _hasher.Setup(x => x.VerifyHash(password, salt, encryptedPassword)).ReturnsAsync(true);
-            _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
+            _hasher.Setup(x => x.VerifyHash(password, salt, hashedPassword)).ReturnsAsync(true);
+            _jwtGenerator.Setup(x => x.GenerateJwt(account.Id)).Returns(token);
 
             var result = await _accountService.Login(login);
 
@@ -112,14 +112,14 @@ namespace AccountServiceTests.ServiceTests
             const string email = "iemand@gmail.com";
             const string password = "MyV3rysecurepw!!2";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
-            var encryptedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "zqawsexdctvbyunimo";
 
             var account = new Account
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 
@@ -130,8 +130,8 @@ namespace AccountServiceTests.ServiceTests
             };
 
             _repository.Setup(x => x.Get(email)).ReturnsAsync(account);
-            _hasher.Setup(x => x.VerifyHash("NotMy!Password1", salt, encryptedPassword)).ReturnsAsync(true);
-            _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
+            _hasher.Setup(x => x.VerifyHash("NotMy!Password1", salt, hashedPassword)).ReturnsAsync(true);
+            _jwtGenerator.Setup(x => x.GenerateJwt(account.Id)).Returns(token);
 
             var result = await Assert.ThrowsAsync<IncorrectPasswordException>(() => _accountService.Login(login));
 
@@ -144,16 +144,17 @@ namespace AccountServiceTests.ServiceTests
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
-            const string password = "MyV3rysecurepw!!2";
+            const string oldPassword = "MyV3rysecurepw!!2";
+            const string newPassword = "Myn3V3ryS3cur!@";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
-            var encryptedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "zqawsexdctvbyunimo";
 
             var account = new Account
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 
@@ -162,20 +163,21 @@ namespace AccountServiceTests.ServiceTests
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 
             var passwordModel = new ChangePasswordModel
             {
-                OldPassword = password,
-                NewPassword = "Myn3V3ryS3cur!@"
+                OldPassword = oldPassword,
+                NewPassword = newPassword
             };
             
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
+            _hasher.Setup(x => x.VerifyHash(oldPassword, salt, hashedPassword)).ReturnsAsync(true);
+            _regexHelper.Setup(x => x.IsValidPassword(newPassword)).Returns(true);
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
-            _hasher.Setup(x => x.VerifyHash(password, salt, encryptedPassword)).ReturnsAsync(true);
-            _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
+            _jwtGenerator.Setup(x => x.GenerateJwt(account.Id)).Returns(token);
 
             var result = await _accountService.UpdatePassword(account.Id, passwordModel);
 
@@ -189,14 +191,14 @@ namespace AccountServiceTests.ServiceTests
             const string email = "iemand@gmail.com";
             const string password = "MyV3rysecurepw!!2";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
-            var encryptedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "zqawsexdctvbyunimo";
 
             var account = new Account
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 
@@ -205,7 +207,7 @@ namespace AccountServiceTests.ServiceTests
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 
@@ -218,18 +220,16 @@ namespace AccountServiceTests.ServiceTests
 
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
-            _hasher.Setup(x => x.VerifyHash(password, salt, encryptedPassword)).ReturnsAsync(true);
-            _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
+            _hasher.Setup(x => x.VerifyHash(password, salt, hashedPassword)).ReturnsAsync(true);
+            _jwtGenerator.Setup(x => x.GenerateJwt(account.Id)).Returns(token);
 
-            var result =
-                await Assert.ThrowsAsync<IncorrectPasswordException>(() =>
+            var result = await Assert.ThrowsAsync<IncorrectPasswordException>(() =>
                     _accountService.UpdatePassword(account.Id, passwordModel));
 
             Assert.NotNull(result);
             Assert.IsType<IncorrectPasswordException>(result);
         }
-
-
+        
         [Fact]
         public async Task UpdateAccountSuccess()
         {
@@ -260,6 +260,8 @@ namespace AccountServiceTests.ServiceTests
                 isDAppOwner = update.isDAppOwner
             };
 
+            _regexHelper.Setup(r => r.IsValidEmail(emailNew)).Returns(true);
+
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
 
@@ -275,16 +277,14 @@ namespace AccountServiceTests.ServiceTests
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
-            const string password = "MyV3rysecurepw!!2";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
-            var encryptedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
-            const string token = "zqawsexdctvbyunimo";
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
 
             var account = new Account
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 
@@ -303,16 +303,14 @@ namespace AccountServiceTests.ServiceTests
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
-            const string password = "MyV3rysecurepw!!2";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
-            var encryptedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
-            const string token = "zqawsexdctvbyunimo";
+            var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
 
             var account = new Account
             {
                 Id = id,
                 Email = email,
-                Password = encryptedPassword,
+                Password = hashedPassword,
                 Salt = salt
             };
 

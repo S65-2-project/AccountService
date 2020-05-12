@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using AccountService.Controllers;
 using AccountService.Domain;
+using AccountService.Exceptions;
 using AccountService.Models;
 using AccountService.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace AccountServiceTests.Controller
         }
 
         [Fact]
-        public async Task CreateAccountTest()
+        public async Task CreateAccount_ValidAccount_ReturnsAccount()
         {
             const string email = "test@test.nl";
             const string password = "MyV3ryS3cureP";
@@ -51,13 +52,12 @@ namespace AccountServiceTests.Controller
 
             var result = await _accountController.CreateAccount(createAccountModel) as ObjectResult;
 
-            Assert.NotNull(result);
             Assert.IsType<OkObjectResult>(result);
             Assert.Equal(account.Id, ((Account) result.Value).Id);
         }
 
         [Fact]
-        public async Task LoginTest()
+        public async Task Login_ValidAccount_ReturnsAccount()
         {
             const string email = "test@test.nl";
             const string password = "MyV3ryS3cureP!W!";
@@ -84,17 +84,14 @@ namespace AccountServiceTests.Controller
 
             _accountService.Setup(x => x.Login(loginModel)).ReturnsAsync(account);
 
-            var result = await _accountController.Login(loginModel);
-            var data = result as ObjectResult;
+            var result = await _accountController.Login(loginModel) as ObjectResult;
 
-            Assert.NotNull(result);
-            Assert.NotNull(data);
             Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(account.Id, ((Account) data.Value).Id);
+            Assert.Equal(account.Id, ((Account) result.Value).Id);
         }
 
         [Fact]
-        public async Task LoginBadRequestTest()
+        public async Task Login_InvalidAccount_ThrowsNotFound()
         {
             const string email = "test@test.nl";
             const string password = "secure";
@@ -106,12 +103,11 @@ namespace AccountServiceTests.Controller
             };
 
             _accountService.Setup(x => x.Login(loginModel))
-                .Throws<ArgumentException>();
+                .Throws<EmailNotFoundException>();
 
             var result = await _accountController.Login(loginModel);
 
-            Assert.NotNull(result);
-            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.IsType<NotFoundObjectResult>(result);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AccountService.Exceptions;
 using AccountService.Models;
 using AccountService.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -25,6 +26,10 @@ namespace AccountService.Controllers
             try
             {
                 return Ok(await _accountService.Login(loginModel));
+            }
+            catch (EmailNotFoundException e)
+            {
+                return NotFound(e.Message);
             }
             catch (Exception e)
             {

@@ -14,9 +14,9 @@ namespace AccountService.Services
         private readonly IAccountRepository _repository;
         private readonly IHasher _hasher;
         private readonly IRegexHelper _regexHelper;
-        private readonly IJWTokenGenerator _tokenGenerator;
+        private readonly ITokenGenerator _tokenGenerator;
 
-        public AccountService(IAccountRepository repository, IHasher hasher, IJWTokenGenerator tokenGenerator,
+        public AccountService(IAccountRepository repository, IHasher hasher, ITokenGenerator tokenGenerator,
             IRegexHelper regexHelper)
         {
             _repository = repository;
@@ -58,21 +58,20 @@ namespace AccountService.Services
         
         public async Task<Account> Login(LoginModel loginModel)
         {
-            var account = _repository.Get(loginModel.Email).Result;
-            if (account == null) throw new ArgumentException("A user with this email address does not exist. ");
+            var account = await _repository.Get(loginModel.Email);
+            if (account == null) throw new EmailNotFoundException();
 
             if (!await _hasher.VerifyHash(loginModel.Password, account.Salt, account.Password))
-            {
                 throw new IncorrectPasswordException();
-            }
 
-            account.Token = _tokenGenerator.GenerateJWT(account.Id);
+            account.Token = _tokenGenerator.GenerateJwt(account.Id);
+            
             return account.WithoutSensitiveData();
         }
 
         public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
-            var account = await GetAccountWithEncryptedPassword(id);
+            var account = await _repository.Get(id);
 
             if (account == null)
             {
@@ -103,7 +102,7 @@ namespace AccountService.Services
         {
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
 
-            var account = await GetAccountWithEncryptedPassword(id);
+            var account = await _repository.Get(id);
             account.Email = model.Email;
             account.isDelegate = model.isDelegate;
             account.isDAppOwner = model.isDelegate;
@@ -122,11 +121,6 @@ namespace AccountService.Services
             }
 
             return account.WithoutSensitiveData();
-        }
-
-        private async Task<Account> GetAccountWithEncryptedPassword(Guid id)
-        {
-            return await _repository.Get(id);
         }
 
         public async Task DeleteAccount(Guid id)

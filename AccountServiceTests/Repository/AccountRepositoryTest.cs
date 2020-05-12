@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using AccountService.DatastoreSettings;
 using AccountService.Domain;
 using AccountService.Repositories;
@@ -25,7 +26,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async void CreateAccountTest()
+        public async Task CreateAccountTest()
         {
             var testAccount1 = new Account
             {
@@ -50,7 +51,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async void GetByIdTest()
+        public async Task GetByIdTest()
         {
             var testAccount1 = new Account
             {
@@ -77,7 +78,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async void GetByInvalidEmptyGuidTest()
+        public async Task GetByInvalidEmptyGuidTest()
         {
             var guid = Guid.Empty;
             var testAccount1 = new Account
@@ -102,7 +103,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async void RemoveByIdTest()
+        public async Task RemoveByIdTest()
         {
             var testAccount1 = new Account
             {
@@ -130,7 +131,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async void RemoveByIdNotFoundTest()
+        public async Task RemoveByIdNotFoundTest()
         {
             var testAccount1 = new Account
             {

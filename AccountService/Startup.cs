@@ -73,7 +73,7 @@ namespace AccountService
                 sp.GetRequiredService<IOptions<AccountDatabaseSettings>>().Value);
             
             
-            services.AddTransient<IJWTokenGenerator, JWTokenGenerator>();
+            services.AddTransient<ITokenGenerator, TokenGenerator>();
 
             services.AddMessagePublisher();
 
