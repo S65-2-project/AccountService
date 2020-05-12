@@ -1,6 +1,5 @@
 using AccountService.DatastoreSettings;
 using AccountService.Helpers;
-using AccountService.Messaging;
 using AccountService.Repositories;
 using AccountService.Services;
 using Microsoft.AspNetCore.Builder;
@@ -74,9 +73,7 @@ namespace AccountService
             
             
             services.AddTransient<ITokenGenerator, TokenGenerator>();
-
-            services.AddMessagePublisher();
-
+            
             services.AddControllers();
         }
 
