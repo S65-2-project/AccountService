@@ -16,6 +16,12 @@ jobs:
       # Checkout Git repository
       - uses: actions/checkout@v2
 
+      # Decrypt the gpg encrypted config files
+      - name: Decrypt the gpg encrypted config files
+        run: ./.github/scripts/decrypt_gpg_passphrase.sh
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPRHASE}}
+
       # Install the dependencies needed for the project
       - name: Install dependencies
         run: dotnet restore
