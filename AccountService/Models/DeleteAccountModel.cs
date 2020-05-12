@@ -2,7 +2,7 @@
 
 namespace AccountService.Models
 {
-    public class DeleteModel
+    public class DeleteAccountModel
     {
         [Required]
         public string Email { get; set; }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AccountService.Domain;
-using AccountService.Helpers;
+using AccountService.Exceptions;
 using AccountService.Models;
 using AccountService.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,59 +12,110 @@ namespace AccountService.Controllers
     [Route("[controller]")]
     public class AccountController : ControllerBase
     {
-        private readonly IAccService _accService;
+        private readonly IAccountService _accountService;
 
-        public AccountController(IAccService accService)
+        public AccountController(IAccountService accountService)
         {
-            _accService = accService;
+            _accountService = accountService;
         }
 
         [AllowAnonymous]
-        [HttpPost("")]
-        public async Task<IActionResult> CreateAccount(Account account)
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
             try
             {
-                await _accService.CreateAccount(account.Email, account.Password);
+                return Ok(await _accountService.Login(loginModel));
+            }
+            catch (EmailNotFoundException e)
+            {
+                return NotFound(e.Message);
             }
             catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
-            return Ok(account.WithoutPassword());
+        }
+
+
+        [AllowAnonymous]
+        [HttpPost("")]
+        public async Task<IActionResult> CreateAccount([FromBody]CreateAccountModel accountModel)
+        {
+            try
+            {
+                return Ok(await _accountService.CreateAccount(accountModel));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
         
         [AllowAnonymous]
-        [HttpGet("")]
-        public async Task<IActionResult> GetAccount(string email)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAccount(Guid id)
         {
-            var acc = await _accService.GetAccount(email);
-            return Ok(acc);
+            try
+            {
+                return Ok(await _accountService.GetAccount(id));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            
         }
 
-        [AllowAnonymous]
-        [HttpPut("")]
-        public async Task<IActionResult> UpdateAccount(string email, UpdateAccountModel account)
+        [Authorize]
+        [HttpPut("UpdatePassword/{id}")]
+        public async Task<IActionResult> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
-            await _accService.UpdateAccount(account.Email, account.Password);
-            return Ok(GetAccount(email));
+            try
+            {
+                return Ok(await _accountService.UpdatePassword(id, passwordModel));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAccount(Guid id, [FromBody]UpdateAccountModel account)
+        {
+            try
+            {
+                var result = await _accountService.UpdateAccount(id, account);
+                
+                if (result == null)
+                {
+                    return BadRequest("email invalid");
+                }
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            
         }
         
-        [AllowAnonymous]
-        [HttpDelete("")]
-        public async Task<IActionResult> DeleteAccount(Account account)
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAccount(Guid id)
         {
-            await _accService.DeleteAccount(account.Email);
-            return Ok();
-        }
-
-        [AllowAnonymous]
-        [HttpPut("Role")]
-        public async Task<IActionResult> AddRole(Account account)
-        {
-            var acc = await _accService.GetAccount(account.Email);
-            await _accService.UpdateRole(acc.Email, account.isDelegate, account.isDelegate);
-            return Ok(acc);
+            try
+            {
+                await _accountService.DeleteAccount(id);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            
         }
     }
 }

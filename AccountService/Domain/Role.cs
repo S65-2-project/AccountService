@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AccountService.Domain
+﻿namespace AccountService.Domain
 {
     public enum Role
     {

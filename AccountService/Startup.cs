@@ -1,6 +1,5 @@
 using AccountService.DatastoreSettings;
 using AccountService.Helpers;
-using AccountService.Messaging;
 using AccountService.Repositories;
 using AccountService.Services;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AccountService
 {
@@ -25,10 +27,39 @@ namespace AccountService
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // configure strongly typed settings objects
+            var appSettingsSection = Configuration.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingsSection);
+
+            // configure jwt authentication
+            var appSettings = appSettingsSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.SecretJWT);
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                };
+            });
+
             services.AddCors();
+            
+            services.AddTransient<IHasher, Hasher>();
+
             services.AddTransient<IRegexHelper, RegexHelper>();
             
-            services.AddTransient<IAccService, Services.AccService>();
+            services.AddTransient<IAccountService, Services.AccountService>();
             
             services.AddTransient<IAccountRepository, AccountRepository>();
             
@@ -38,8 +69,9 @@ namespace AccountService
             services.AddSingleton<IAccountDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<AccountDatabaseSettings>>().Value);
             
-            services.AddMessagePublisher();
-
+            
+            services.AddTransient<ITokenGenerator, TokenGenerator>();
+            
             services.AddControllers();
         }
 
@@ -58,6 +90,9 @@ namespace AccountService
             );
             
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
