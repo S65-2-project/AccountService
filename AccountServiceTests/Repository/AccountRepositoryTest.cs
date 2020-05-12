@@ -26,7 +26,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async Task CreateAccountTest()
+        public async Task Create_ValidAccount_ReturnsAccount()
         {
             var testAccount1 = new Account
             {
@@ -51,7 +51,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async Task GetByIdTest()
+        public async Task Get_ValidAccount_ReturnsAccount()
         {
             var testAccount1 = new Account
             {
@@ -78,7 +78,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async Task GetByInvalidEmptyGuidTest()
+        public async Task Get_InvalidId_ReturnsAccount()
         {
             var guid = Guid.Empty;
             var testAccount1 = new Account
@@ -103,7 +103,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async Task RemoveByIdTest()
+        public async Task Remove_ValidAccount_ReturnsNull()
         {
             var testAccount1 = new Account
             {
@@ -131,7 +131,7 @@ namespace AccountServiceTests.Repository
         }
 
         [Fact]
-        public async Task RemoveByIdNotFoundTest()
+        public async Task Remove_InvalidId_ReturnsNotNull()
         {
             var testAccount1 = new Account
             {

@@ -34,13 +34,12 @@ namespace AccountServiceTests.ServiceTests
         }
 
         [Fact]
-        public async Task CreateAccountSuccess()
+        public async Task CreateAccount_ValidAccount_ReturnsAccountWithoutSensitiveData()
         {
             const string email = "iemand@gmail.com";
             const string password = "MyV3rysecurepw!!2";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
             var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
-            const string token = "afdsafdsafsda";
 
             var account = new Account
             {
@@ -65,14 +64,12 @@ namespace AccountServiceTests.ServiceTests
             var result = await _accountService.CreateAccount(createModel);
 
             Assert.Equal(account.Email, result.Email);
-            Assert.NotEqual(Guid.Empty, result.Id);
             Assert.Null(result.Password);
             Assert.Null(result.Salt);
-            Assert.NotNull(result);
         }
         
         [Fact]
-        public async Task LoginSuccess()
+        public async Task Login_ValidAccount_ReturnsAccountWithoutSensitiveData()
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
@@ -99,14 +96,12 @@ namespace AccountServiceTests.ServiceTests
             _jwtGenerator.Setup(x => x.GenerateJwt(account.Id)).Returns(token);
 
             var result = await _accountService.Login(login);
-
-
-            Assert.NotNull(result);
-            Assert.Equal(id, account.Id);
+            
+            Assert.Equal(id, result.Id);
         }
 
         [Fact]
-        public async Task LoginInvalid()
+        public async Task Login_IncorrectPassword_ThrowsIncorrectPasswordException()
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
@@ -135,12 +130,11 @@ namespace AccountServiceTests.ServiceTests
 
             var result = await Assert.ThrowsAsync<IncorrectPasswordException>(() => _accountService.Login(login));
 
-            Assert.NotNull(result);
             Assert.IsType<IncorrectPasswordException>(result);
         }
 
         [Fact]
-        public async Task UpdatePasswordSucces()
+        public async Task UpdatePassword_NewPassword_ReturnsAccountWithoutSensitiveData()
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
@@ -148,7 +142,6 @@ namespace AccountServiceTests.ServiceTests
             const string newPassword = "Myn3V3ryS3cur!@";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
             var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
-            const string token = "zqawsexdctvbyunimo";
 
             var account = new Account
             {
@@ -157,8 +150,7 @@ namespace AccountServiceTests.ServiceTests
                 Password = hashedPassword,
                 Salt = salt
             };
-
-
+            
             var updatedAccount = new Account
             {
                 Id = id,
@@ -177,15 +169,16 @@ namespace AccountServiceTests.ServiceTests
             _hasher.Setup(x => x.VerifyHash(oldPassword, salt, hashedPassword)).ReturnsAsync(true);
             _regexHelper.Setup(x => x.IsValidPassword(newPassword)).Returns(true);
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
-            _jwtGenerator.Setup(x => x.GenerateJwt(account.Id)).Returns(token);
 
             var result = await _accountService.UpdatePassword(account.Id, passwordModel);
 
-            Assert.NotNull(result);
+            Assert.Equal(account.Id, result.Id);
+            Assert.Null(result.Password);
+            Assert.Null(result.Salt);
         }
 
         [Fact]
-        public async Task UpdatePasswordWrongPassword()
+        public async Task UpdatePassword_IncorrectPassword_ThrowsIncorrectPasswordException()
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
@@ -202,7 +195,6 @@ namespace AccountServiceTests.ServiceTests
                 Salt = salt
             };
 
-
             var updatedAccount = new Account
             {
                 Id = id,
@@ -217,7 +209,6 @@ namespace AccountServiceTests.ServiceTests
                 NewPassword = "Myn3westV3ryS3cur3password12345!@"
             };
 
-
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
             _hasher.Setup(x => x.VerifyHash(password, salt, hashedPassword)).ReturnsAsync(true);
@@ -226,12 +217,11 @@ namespace AccountServiceTests.ServiceTests
             var result = await Assert.ThrowsAsync<IncorrectPasswordException>(() =>
                     _accountService.UpdatePassword(account.Id, passwordModel));
 
-            Assert.NotNull(result);
             Assert.IsType<IncorrectPasswordException>(result);
         }
         
         [Fact]
-        public async Task UpdateAccountSuccess()
+        public async Task UpdateAccount_NewAccountData_ReturnsAccountWithoutSensitiveData()
         {
             var id = Guid.NewGuid();
             const string emailOld = "iemand@gmail.com";
@@ -273,7 +263,7 @@ namespace AccountServiceTests.ServiceTests
         }
 
         [Fact]
-        public async Task GetAccountSuccess()
+        public async Task GetAccount_Id_ReturnsAccountWithoutSensitiveData()
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
@@ -290,7 +280,7 @@ namespace AccountServiceTests.ServiceTests
 
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
 
-            var result = await _accountService.GetAccountWithoutPassword(account.Id);
+            var result = await _accountService.GetAccount(account.Id);
 
             Assert.Equal(id, result.Id);
             Assert.Equal(account.Email, result.Email);
@@ -299,7 +289,7 @@ namespace AccountServiceTests.ServiceTests
         }
 
         [Fact]
-        public async Task GetAccountInvalidId()
+        public async Task GetAccount_InvalidId_ReturnsAccountWithoutSensitiveData()
         {
             var id = Guid.NewGuid();
             const string email = "iemand@gmail.com";
@@ -318,9 +308,8 @@ namespace AccountServiceTests.ServiceTests
 
             var result =
                 await Assert.ThrowsAsync<AccountNotFoundException>(() =>
-                    _accountService.GetAccountWithoutPassword(Guid.Empty));
+                    _accountService.GetAccount(Guid.Empty));
 
-            Assert.NotNull(result);
             Assert.IsType<AccountNotFoundException>(result);
         }
     }

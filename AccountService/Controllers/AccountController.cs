@@ -58,7 +58,7 @@ namespace AccountService.Controllers
         {
             try
             {
-                return Ok(await _accountService.GetAccountWithoutPassword(id));
+                return Ok(await _accountService.GetAccount(id));
             }
             catch (Exception e)
             {

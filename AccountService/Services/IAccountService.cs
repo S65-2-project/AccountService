@@ -42,7 +42,7 @@ namespace AccountService.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns>Account</returns>
-        Task<Account> GetAccountWithoutPassword(Guid id);
+        Task<Account> GetAccount(Guid id);
         
         /// <summary>
         /// Removes an account

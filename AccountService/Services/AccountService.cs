@@ -69,6 +69,17 @@ namespace AccountService.Services
             return account.WithoutSensitiveData();
         }
 
+        public async Task<Account> GetAccount(Guid id)
+        {
+            var account = await _repository.Get(id);
+            if (account == null)
+            {
+                throw new AccountNotFoundException();
+            }
+
+            return account.WithoutSensitiveData();
+        }
+
         public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
         {
             var account = await _repository.Get(id);
@@ -110,17 +121,6 @@ namespace AccountService.Services
             var updatedAccount = await _repository.Update(id, account);
             if (updatedAccount == null) throw new AccountNotFoundException();
             return updatedAccount.WithoutSensitiveData();
-        }
-
-        public async Task<Account> GetAccountWithoutPassword(Guid id)
-        {
-            var account = await _repository.Get(id);
-            if (account == null)
-            {
-                throw new AccountNotFoundException();
-            }
-
-            return account.WithoutSensitiveData();
         }
 
         public async Task DeleteAccount(Guid id)
