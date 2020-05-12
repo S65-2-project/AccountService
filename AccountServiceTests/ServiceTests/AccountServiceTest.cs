@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AccountService.Domain;
+using AccountService.Exceptions;
 using AccountService.Helpers;
 using AccountService.Models;
 using AccountService.Repositories;
@@ -132,10 +133,10 @@ namespace AccountServiceTests.ServiceTests
             _hasher.Setup(x => x.VerifyHash("NotMy!Password1", salt, encryptedPassword)).ReturnsAsync(true);
             _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
 
-            var result = await Assert.ThrowsAsync<ArgumentException>(() => _accountService.Login(login));
+            var result = await Assert.ThrowsAsync<IncorrectPasswordException>(() => _accountService.Login(login));
 
             Assert.NotNull(result);
-            Assert.IsType<ArgumentException>(result);
+            Assert.IsType<IncorrectPasswordException>(result);
         }
 
         [Fact]
@@ -168,7 +169,7 @@ namespace AccountServiceTests.ServiceTests
             var passwordModel = new ChangePasswordModel
             {
                 OldPassword = password,
-                NewPassword = "Myn3westV3ryS3cur3password12345!@"
+                NewPassword = "Myn3V3ryS3cur!@"
             };
             
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
@@ -221,11 +222,11 @@ namespace AccountServiceTests.ServiceTests
             _jwtGenerator.Setup(x => x.GenerateJWT(account.Id)).Returns(token);
 
             var result =
-                await Assert.ThrowsAsync<ArgumentException>(() =>
+                await Assert.ThrowsAsync<IncorrectPasswordException>(() =>
                     _accountService.UpdatePassword(account.Id, passwordModel));
 
             Assert.NotNull(result);
-            Assert.IsType<ArgumentException>(result);
+            Assert.IsType<IncorrectPasswordException>(result);
         }
 
 
@@ -234,7 +235,7 @@ namespace AccountServiceTests.ServiceTests
         {
             var id = Guid.NewGuid();
             const string emailOld = "iemand@gmail.com";
-            const string emailNew = "mijn@nieuwe.email";
+            const string emailNew = "mijn@nieuwe.nl";
 
             var account = new Account
             {
@@ -318,11 +319,11 @@ namespace AccountServiceTests.ServiceTests
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
 
             var result =
-                await Assert.ThrowsAsync<NullReferenceException>(() =>
+                await Assert.ThrowsAsync<AccountNotFoundException>(() =>
                     _accountService.GetAccountWithoutPassword(Guid.Empty));
 
             Assert.NotNull(result);
-            Assert.IsType<NullReferenceException>(result);
+            Assert.IsType<AccountNotFoundException>(result);
         }
     }
 }
