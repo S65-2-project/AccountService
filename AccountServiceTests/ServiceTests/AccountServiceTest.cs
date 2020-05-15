@@ -6,6 +6,10 @@ using AccountService.Helpers;
 using AccountService.Models;
 using AccountService.Repositories;
 using AccountService.Services;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
+using MessageBroker;
+using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Moq;
 using Xunit;
 
@@ -18,6 +22,7 @@ namespace AccountServiceTests.ServiceTests
         private readonly Mock<IHasher> _hasher;
         private readonly Mock<ITokenGenerator> _jwtGenerator;
         private readonly Mock<IRegexHelper> _regexHelper;
+        private readonly Mock<IMessageQueuePublisher> _messageQueuePublisher;
 
         public AccountServiceTest()
         {
@@ -25,12 +30,16 @@ namespace AccountServiceTests.ServiceTests
             _hasher = new Mock<IHasher>();
             _repository = new Mock<IAccountRepository>();
             _regexHelper = new Mock<IRegexHelper>();
+            _messageQueuePublisher = new Mock<IMessageQueuePublisher>();
+
             _accountService = new AccountService.Services.AccountService(
                 _repository.Object,
                 _hasher.Object,
                 _jwtGenerator.Object,
-                _regexHelper.Object
-            );
+                _regexHelper.Object,
+                _messageQueuePublisher.Object,
+            Options.Create(new MessageQueueSettings())
+                );
         }
 
         [Fact]
@@ -60,6 +69,7 @@ namespace AccountServiceTests.ServiceTests
             _repository.Setup(x => x.Create(It.IsAny<Account>())).ReturnsAsync(account);
             _regexHelper.Setup(x => x.IsValidEmail(createModel.Email)).Returns(true);
             _regexHelper.Setup(x => x.IsValidPassword(createModel.Password)).Returns(true);
+            _messageQueuePublisher.Setup(x => x.PublishMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), new {Email = email})).Returns(Task.CompletedTask);
 
             var result = await _accountService.CreateAccount(createModel);
 

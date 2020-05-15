@@ -8,7 +8,7 @@ using Xunit;
 
 namespace AccountServiceTests.Repository
 {
-    public class AccountRepositoryTest
+    public class AccountRepositoryTest : IDisposable
     {
         private readonly IAccountRepository _accountRepository;
         private readonly MongoDbRunner _mongoDbRunner;
@@ -155,6 +155,11 @@ namespace AccountServiceTests.Repository
 
             Assert.NotNull(result1);
             Assert.NotNull(result2);
+        }
+
+        public void Dispose()
+        {
+            _mongoDbRunner?.Dispose();
         }
     }
 }
