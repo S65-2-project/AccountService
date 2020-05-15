@@ -261,7 +261,8 @@ namespace AccountServiceTests.ServiceTests
             };
 
             _regexHelper.Setup(r => r.IsValidEmail(emailNew)).Returns(true);
-
+            _repository.Setup(x => x.Get(update.Email));
+            
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
 

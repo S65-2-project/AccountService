@@ -119,6 +119,12 @@ namespace AccountService.Services
         public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model)
         {
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
+            
+            var email = await _repository.Get(model.Email);
+            if (email != null)
+            {
+                throw new EmailAlreadyExistsException();
+            }
 
             var account = await _repository.Get(id);
             account.Email = model.Email;
