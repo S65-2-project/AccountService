@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Text;
+using MessageBroker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -52,6 +53,11 @@ namespace AccountService
                     ValidateLifetime = true,
                 };
             });
+            
+            
+            services.Configure<MessageQueueSettings>(Configuration.GetSection("MessageQueueSettings"));
+
+            services.AddMessagePublisher(Configuration["MessageQueueSettings:Uri"]);
 
             services.AddCors();
             

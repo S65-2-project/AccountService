@@ -5,6 +5,8 @@ using AccountService.Exceptions;
 using AccountService.Helpers;
 using AccountService.Models;
 using AccountService.Repositories;
+using MessageBroker;
+using Microsoft.Extensions.Options;
 
 namespace AccountService.Services
 {
@@ -13,15 +15,19 @@ namespace AccountService.Services
         private readonly IAccountRepository _repository;
         private readonly IHasher _hasher;
         private readonly IRegexHelper _regexHelper;
+        private readonly IMessageQueuePublisher _messageQueuePublisher;
+        private readonly MessageQueueSettings _messageQueueSettings;
         private readonly ITokenGenerator _tokenGenerator;
 
         public AccountService(IAccountRepository repository, IHasher hasher, ITokenGenerator tokenGenerator,
-            IRegexHelper regexHelper)
+            IRegexHelper regexHelper, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings)
         {
             _repository = repository;
             _hasher = hasher;
             _tokenGenerator = tokenGenerator;
             _regexHelper = regexHelper;
+            _messageQueuePublisher = messageQueuePublisher;
+            _messageQueueSettings = messageQueueSettings.Value;
         }
 
         public async Task<Account> CreateAccount(CreateAccountModel model)
@@ -51,6 +57,8 @@ namespace AccountService.Services
             };
 
             newAccount = await _repository.Create(newAccount);
+            
+            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "EmailService", "RegisterUser", new {Email = newAccount.Email});
 
             return newAccount.WithoutSensitiveData();
         }
