@@ -2,11 +2,11 @@
 
 namespace AccountService.Models
 {
-    public class UpdateAccountModel
+    public class LoginModel
     {
         [Required]
         public string Email { get; set; }
-        public bool isDAppOwner { get; set; }
-        public bool isDelegate { get; set; }
+        [Required]
+        public string Password { get; set; }
     }
 }

@@ -3,22 +3,16 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AccountService.DatastoreSettings;
 using AccountService.Domain;
-using AccountService.Messaging;
-using AccountService.Models;
 using MongoDB.Driver;
-using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AccountService.Repositories
 {
     public class AccountRepository : IAccountRepository
     {
         private readonly IMongoCollection<Account> _accounts;
-        private readonly IMessageQueuePublisher _publisher;
 
-        public AccountRepository(IAccountDatabaseSettings settings, IMessageQueuePublisher publisher)
+        public AccountRepository(IAccountDatabaseSettings settings)
         {
-            _publisher = publisher;
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
 
@@ -37,14 +31,12 @@ namespace AccountService.Repositories
         public async Task<Account> Create(Account account)
         {
             await _accounts.InsertOneAsync(account);
-            var newAccount = new CreateAccountModel {Id = account.Id, Email = account.Email, Password = account.Password};
-            await _publisher.PublishMessageAsync("AuthenticationService", "RegisterUser", newAccount);
             return account;
         }
 
         public async Task<Account> Update(Guid id, Account account)
         {
-            await _accounts.ReplaceOneAsync(f => f == account, account);
+            await _accounts.ReplaceOneAsync(f => f.Id == id, account);
             return account;
         }
 

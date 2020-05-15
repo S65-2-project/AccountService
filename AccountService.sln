@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountService", "AccountService\AccountService.csproj", "{B71A5375-8EA7-4320-B232-891D1FECE297}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccServiceTests", "AccServiceTests\AccServiceTests.csproj", "{853BB777-ACC3-4F42-B408-2C6B4022DFA2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountServiceTests", "AccountServiceTests\AccountServiceTests.csproj", "{853BB777-ACC3-4F42-B408-2C6B4022DFA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
