@@ -120,13 +120,13 @@ namespace AccountService.Services
         {
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
             
-            var email = await _repository.Get(model.Email);
-            if (email != null)
+            var account = await _repository.Get(id);
+            var updatedEmail = await _repository.Get(model.Email);
+            if (updatedEmail.Email != null && account.Email != updatedEmail.Email)
             {
                 throw new EmailAlreadyExistsException();
             }
 
-            var account = await _repository.Get(id);
             account.Email = model.Email;
             account.isDelegate = model.isDelegate;
             account.isDAppOwner = model.isDAppOwner;
