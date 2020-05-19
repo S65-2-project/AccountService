@@ -123,8 +123,8 @@ namespace AccountService.Services
             var account = await _repository.Get(id);
             if (account == null) throw new AccountNotFoundException();
             
-            var updatedEmail = await _repository.Get(model.Email);
-            if (updatedEmail.Email != null && account.Email != updatedEmail.Email)
+            var accountWithConflictingEmail = await _repository.Get(model.Email);
+            if (accountWithConflictingEmail.Email != null && account.Email != accountWithConflictingEmail.Email)
             {
                 throw new EmailAlreadyExistsException();
             }
