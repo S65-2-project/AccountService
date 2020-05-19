@@ -121,6 +121,8 @@ namespace AccountService.Services
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
             
             var account = await _repository.Get(id);
+            if (account == null) throw new AccountNotFoundException();
+            
             var updatedEmail = await _repository.Get(model.Email);
             if (updatedEmail.Email != null && account.Email != updatedEmail.Email)
             {
