@@ -245,28 +245,28 @@ namespace AccountServiceTests.ServiceTests
                 isDAppOwner = false
             };
 
-            var update = new UpdateAccountModel
+            var updateModel = new UpdateAccountModel
             {
                 Email = emailNew,
                 isDelegate = false,
                 isDAppOwner = true
             };
-
+            
             var updatedAccount = new Account
             {
-                Id = account.Id,
-                Email = update.Email,
-                isDelegate = update.isDelegate,
-                isDAppOwner = update.isDAppOwner
+                Id = id,
+                Email = emailNew,
+                isDelegate = false,
+                isDAppOwner = true
             };
 
             _regexHelper.Setup(r => r.IsValidEmail(emailNew)).Returns(true);
-            _repository.Setup(x => x.Get(update.Email));
-            
             _repository.Setup(x => x.Get(id)).ReturnsAsync(account);
-            _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
 
-            var result = await _accountService.UpdateAccount(id, update);
+            _repository.Setup(x => x.Get(updateModel.Email));
+            _repository.Setup(x => x.Update(id, It.IsAny<Account>())).ReturnsAsync(updatedAccount);
+
+            var result = await _accountService.UpdateAccount(id, updateModel);
 
             Assert.NotEqual(emailOld, result.Email);
             Assert.False(result.isDelegate);

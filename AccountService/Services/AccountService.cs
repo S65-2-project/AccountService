@@ -120,17 +120,19 @@ namespace AccountService.Services
         {
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
             
-            var email = await _repository.Get(model.Email);
-            if (email != null)
+            var account = await _repository.Get(id);
+            if (account == null) throw new AccountNotFoundException();
+            
+            var accountWithConflictingEmail = await _repository.Get(model.Email);
+            if (accountWithConflictingEmail != null && account.Email != accountWithConflictingEmail.Email)
             {
                 throw new EmailAlreadyExistsException();
             }
-
-            var account = await _repository.Get(id);
+            
             account.Email = model.Email;
             account.isDelegate = model.isDelegate;
             account.isDAppOwner = model.isDAppOwner;
-            
+
             var updatedAccount = await _repository.Update(id, account);
             if (updatedAccount == null) throw new AccountNotFoundException();
             return updatedAccount.WithoutSensitiveData();
