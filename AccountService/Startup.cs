@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using AccountService.Publishers;
 
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+
 namespace AccountService
 {
     public class Startup
@@ -80,6 +84,8 @@ namespace AccountService
             services.AddTransient<ITokenGenerator, TokenGenerator>();
             
             services.AddControllers();
+
+            services.AddHealthChecks().AddCheck("healthy", () => HealthCheckResult.Healthy());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -101,7 +107,14 @@ namespace AccountService
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints => { 
+                endpoints.MapControllers(); 
+            });
+
+            app.UseHealthChecks("/", new HealthCheckOptions 
+            {
+                Predicate = r => r.Name.Contains("healthy")
+            });
         }
     }
 }
