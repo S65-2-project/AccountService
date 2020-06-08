@@ -4,6 +4,7 @@ using AccountService.Domain;
 using AccountService.Exceptions;
 using AccountService.Helpers;
 using AccountService.Models;
+using AccountService.Publishers;
 using AccountService.Repositories;
 using AccountService.Services;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
@@ -23,6 +24,7 @@ namespace AccountServiceTests.ServiceTests
         private readonly Mock<ITokenGenerator> _jwtGenerator;
         private readonly Mock<IRegexHelper> _regexHelper;
         private readonly Mock<IMessageQueuePublisher> _messageQueuePublisher;
+        private readonly Mock<IUserMarketplacePublisher> _userMarketplacePublisher;
 
         public AccountServiceTest()
         {
@@ -31,6 +33,7 @@ namespace AccountServiceTests.ServiceTests
             _repository = new Mock<IAccountRepository>();
             _regexHelper = new Mock<IRegexHelper>();
             _messageQueuePublisher = new Mock<IMessageQueuePublisher>();
+            _userMarketplacePublisher = new Mock<IUserMarketplacePublisher>();
 
             _accountService = new AccountService.Services.AccountService(
                 _repository.Object,
@@ -38,7 +41,8 @@ namespace AccountServiceTests.ServiceTests
                 _jwtGenerator.Object,
                 _regexHelper.Object,
                 _messageQueuePublisher.Object,
-            Options.Create(new MessageQueueSettings())
+            Options.Create(new MessageQueueSettings()),
+            _userMarketplacePublisher.Object
                 );
         }
 
