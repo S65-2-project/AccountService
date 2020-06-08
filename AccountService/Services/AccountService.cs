@@ -22,7 +22,7 @@ namespace AccountService.Services
         private readonly IUserMarketplacePublisher _userMarketplacePublisher;
 
         public AccountService(IAccountRepository repository, IHasher hasher, ITokenGenerator tokenGenerator,
-            IRegexHelper regexHelper, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings, IUserMarketplacePublisher userMarketplacePublisher)
+            IRegexHelper regexHelper, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings, IUserMarketplacePublisher _userMarketplacePublisher)
         {
             _repository = repository;
             _hasher = hasher;
@@ -30,7 +30,7 @@ namespace AccountService.Services
             _regexHelper = regexHelper;
             _messageQueuePublisher = messageQueuePublisher;
             _messageQueueSettings = messageQueueSettings.Value;
-            _userMarketplacePublisher = userMarketplacePublisher;
+            this._userMarketplacePublisher = _userMarketplacePublisher;
         }
 
         public async Task<Account> CreateAccount(CreateAccountModel model)
