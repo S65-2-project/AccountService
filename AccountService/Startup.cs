@@ -12,6 +12,7 @@ using System.Text;
 using MessageBroker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using AccountService.Publishers;
 
 namespace AccountService
 {
@@ -64,7 +65,7 @@ namespace AccountService
             services.AddTransient<IHasher, Hasher>();
 
             services.AddTransient<IRegexHelper, RegexHelper>();
-            
+            services.AddTransient<IUserMarketplacePublisher, UserMarketplacePublisher>();
             services.AddTransient<IAccountService, Services.AccountService>();
             
             services.AddTransient<IAccountRepository, AccountRepository>();

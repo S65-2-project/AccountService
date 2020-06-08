@@ -4,6 +4,7 @@ using AccountService.Domain;
 using AccountService.Exceptions;
 using AccountService.Helpers;
 using AccountService.Models;
+using AccountService.Publishers;
 using AccountService.Repositories;
 using MessageBroker;
 using Microsoft.Extensions.Options;
@@ -18,9 +19,10 @@ namespace AccountService.Services
         private readonly IMessageQueuePublisher _messageQueuePublisher;
         private readonly MessageQueueSettings _messageQueueSettings;
         private readonly ITokenGenerator _tokenGenerator;
+        private readonly IUserMarketplacePublisher _userMarketplacePublisher;
 
         public AccountService(IAccountRepository repository, IHasher hasher, ITokenGenerator tokenGenerator,
-            IRegexHelper regexHelper, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings)
+            IRegexHelper regexHelper, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings, IUserMarketplacePublisher userMarketplacePublisher)
         {
             _repository = repository;
             _hasher = hasher;
@@ -28,6 +30,7 @@ namespace AccountService.Services
             _regexHelper = regexHelper;
             _messageQueuePublisher = messageQueuePublisher;
             _messageQueueSettings = messageQueueSettings.Value;
+            _userMarketplacePublisher = userMarketplacePublisher;
         }
 
         public async Task<Account> CreateAccount(CreateAccountModel model)
@@ -57,12 +60,12 @@ namespace AccountService.Services
             };
 
             newAccount = await _repository.Create(newAccount);
-            
-            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "EmailService", "RegisterUser", new {Email = newAccount.Email});
+
+            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "EmailService", "RegisterUser", new { Email = newAccount.Email });
 
             return newAccount.WithoutSensitiveData();
         }
-        
+
         public async Task<Account> Login(LoginModel loginModel)
         {
             var account = await _repository.Get(loginModel.Email);
@@ -72,7 +75,7 @@ namespace AccountService.Services
                 throw new IncorrectPasswordException();
 
             account.Token = _tokenGenerator.GenerateJwt(account.Id);
-            
+
             return account.WithoutSensitiveData();
         }
 
@@ -95,7 +98,7 @@ namespace AccountService.Services
             {
                 throw new AccountNotFoundException();
             }
-            
+
             if (!await _hasher.VerifyHash(passwordModel.OldPassword, account.Salt, account.Password))
             {
                 throw new IncorrectPasswordException();
@@ -119,23 +122,30 @@ namespace AccountService.Services
         public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model)
         {
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
-            
+
             var account = await _repository.Get(id);
             if (account == null) throw new AccountNotFoundException();
-            
+
             var accountWithConflictingEmail = await _repository.Get(model.Email);
             if (accountWithConflictingEmail != null && account.Email != accountWithConflictingEmail.Email)
             {
                 throw new EmailAlreadyExistsException();
             }
-            
+
             account.Email = model.Email;
             account.isDelegate = model.isDelegate;
             account.isDAppOwner = model.isDAppOwner;
 
             var updatedAccount = await _repository.Update(id, account);
-            if (updatedAccount == null) throw new AccountNotFoundException();
-            return updatedAccount.WithoutSensitiveData();
+            if (updatedAccount == null)
+            { 
+                throw new AccountNotFoundException(); 
+            }
+            else
+            {
+                await _userMarketplacePublisher.PublishUpdateUser(updatedAccount);
+                return updatedAccount.WithoutSensitiveData();
+            }
         }
 
         public async Task DeleteAccount(Guid id)
@@ -144,8 +154,11 @@ namespace AccountService.Services
             {
                 throw new AccountNotFoundException();
             }
-            
-            await _repository.Remove(id);
+            else
+            {
+                await _userMarketplacePublisher.PublishDeleteUser(id);
+                await _repository.Remove(id);
+            }
         }
     }
 }
