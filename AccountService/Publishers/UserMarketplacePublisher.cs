@@ -20,12 +20,12 @@ namespace AccountService.Publishers
         }
         public async Task PublishDeleteUser(Guid id)
         {
-            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "marketplace-service", "delete-user", new { Id = id });
+            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "MarketplaceService", "delete-user", new { Id = id });
         }
 
         public async Task PublishUpdateUser(Account updatedAccount)
         {
-            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "marketplace-service", "update-user", new { Id = updatedAccount.Id, NewEmail = updatedAccount.Email});
+            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "MarketplaceService", "update-user", new { Id = updatedAccount.Id, NewEmail = updatedAccount.Email});
         }
     }
 }
