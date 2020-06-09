@@ -66,6 +66,7 @@ namespace AccountService
             services.AddTransient<IHasher, Hasher>();
 
             services.AddTransient<IRegexHelper, RegexHelper>();
+            services.AddTransient<IJwtIdClaimReaderHelper, JwtIdClaimReaderHelper>();
             
             services.AddTransient<IAccountService, Services.AccountService>();
             

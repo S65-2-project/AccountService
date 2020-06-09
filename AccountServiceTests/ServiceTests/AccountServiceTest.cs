@@ -23,6 +23,7 @@ namespace AccountServiceTests.ServiceTests
         private readonly Mock<ITokenGenerator> _jwtGenerator;
         private readonly Mock<IRegexHelper> _regexHelper;
         private readonly Mock<IMessageQueuePublisher> _messageQueuePublisher;
+        private readonly Mock<IJwtIdClaimReaderHelper> _jwtIdClaimReaderHelper;
 
         public AccountServiceTest()
         {
@@ -31,6 +32,7 @@ namespace AccountServiceTests.ServiceTests
             _repository = new Mock<IAccountRepository>();
             _regexHelper = new Mock<IRegexHelper>();
             _messageQueuePublisher = new Mock<IMessageQueuePublisher>();
+            _jwtIdClaimReaderHelper = new Mock<IJwtIdClaimReaderHelper>();
 
             _accountService = new AccountService.Services.AccountService(
                 _repository.Object,
@@ -38,7 +40,8 @@ namespace AccountServiceTests.ServiceTests
                 _jwtGenerator.Object,
                 _regexHelper.Object,
                 _messageQueuePublisher.Object,
-            Options.Create(new MessageQueueSettings())
+            Options.Create(new MessageQueueSettings()),
+            _jwtIdClaimReaderHelper.Object
                 );
         }
 
@@ -152,6 +155,7 @@ namespace AccountServiceTests.ServiceTests
             const string newPassword = "Myn3V3ryS3cur!@";
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
             var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
+            var jwt = "";
 
             var account = new Account
             {
@@ -179,8 +183,9 @@ namespace AccountServiceTests.ServiceTests
             _hasher.Setup(x => x.VerifyHash(oldPassword, salt, hashedPassword)).ReturnsAsync(true);
             _regexHelper.Setup(x => x.IsValidPassword(newPassword)).Returns(true);
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
+            _jwtIdClaimReaderHelper.Setup(x => x.getUserIdFromToken(jwt)).Returns(id);
 
-            var result = await _accountService.UpdatePassword(account.Id, passwordModel);
+            var result = await _accountService.UpdatePassword(account.Id, passwordModel,jwt);
 
             Assert.Equal(account.Id, result.Id);
             Assert.Null(result.Password);
@@ -196,6 +201,7 @@ namespace AccountServiceTests.ServiceTests
             var salt = new byte[] {0x20, 0x20, 0x20, 0x20};
             var hashedPassword = new byte[] {0x20, 0x20, 0x20, 0x20};
             const string token = "zqawsexdctvbyunimo";
+            const string jwt = "";
 
             var account = new Account
             {
@@ -223,9 +229,10 @@ namespace AccountServiceTests.ServiceTests
             _repository.Setup(x => x.Update(account.Id, account)).ReturnsAsync(updatedAccount);
             _hasher.Setup(x => x.VerifyHash(password, salt, hashedPassword)).ReturnsAsync(true);
             _jwtGenerator.Setup(x => x.GenerateJwt(account.Id)).Returns(token);
+            _jwtIdClaimReaderHelper.Setup(x => x.getUserIdFromToken(jwt)).Returns(id);
 
             var result = await Assert.ThrowsAsync<IncorrectPasswordException>(() =>
-                    _accountService.UpdatePassword(account.Id, passwordModel));
+                    _accountService.UpdatePassword(account.Id, passwordModel, jwt));
 
             Assert.IsType<IncorrectPasswordException>(result);
         }
@@ -236,6 +243,7 @@ namespace AccountServiceTests.ServiceTests
             var id = Guid.NewGuid();
             const string emailOld = "iemand@gmail.com";
             const string emailNew = "mijn@nieuwe.nl";
+            const string jwt = "";
 
             var account = new Account
             {
@@ -266,7 +274,10 @@ namespace AccountServiceTests.ServiceTests
             _repository.Setup(x => x.Get(updateModel.Email));
             _repository.Setup(x => x.Update(id, It.IsAny<Account>())).ReturnsAsync(updatedAccount);
 
-            var result = await _accountService.UpdateAccount(id, updateModel);
+            _jwtIdClaimReaderHelper.Setup(x => x.getUserIdFromToken(jwt)).Returns(id);
+
+
+            var result = await _accountService.UpdateAccount(id, updateModel, jwt);
 
             Assert.NotEqual(emailOld, result.Email);
             Assert.False(result.isDelegate);
