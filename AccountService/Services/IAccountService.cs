@@ -27,7 +27,7 @@ namespace AccountService.Services
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns>Account</returns>
-        Task<Account> UpdateAccount(Guid id, UpdateAccountModel model);
+        Task<Account> UpdateAccount(Guid id, UpdateAccountModel model, string jwt);
         
         /// <summary>
         /// Updates the password of an account
@@ -35,7 +35,7 @@ namespace AccountService.Services
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns>Account</returns>
-        Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel);
+        Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel, string jwt);
         
         /// <summary>
         /// Get an account that has this ID

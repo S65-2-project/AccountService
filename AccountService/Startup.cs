@@ -12,8 +12,11 @@ using System.Text;
 using MessageBroker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using AccountService.Publishers;
+
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 
 namespace AccountService
 {
@@ -66,7 +69,12 @@ namespace AccountService
             services.AddTransient<IHasher, Hasher>();
 
             services.AddTransient<IRegexHelper, RegexHelper>();
+
+            services.AddTransient<IJwtIdClaimReaderHelper, JwtIdClaimReaderHelper>();
             
+
+            services.AddTransient<IUserMarketplacePublisher, UserMarketplacePublisher>();
+
             services.AddTransient<IAccountService, Services.AccountService>();
             
             services.AddTransient<IAccountRepository, AccountRepository>();
