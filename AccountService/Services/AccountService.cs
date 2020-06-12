@@ -110,7 +110,7 @@ namespace AccountService.Services
             }
             if(_jwtIdClaimReaderHelper.getUserIdFromToken(jwt) != account.Id)
             {
-                throw new NotAuthorisedException();
+                throw new NotAuthenticatedException();
             }
 
             //hash the password. 
@@ -137,7 +137,7 @@ namespace AccountService.Services
             }
             if (_jwtIdClaimReaderHelper.getUserIdFromToken(jwt) != account.Id)
             {
-                throw new NotAuthorisedException();
+                throw new NotAuthenticatedException();
             }
 
             account.Email = model.Email;

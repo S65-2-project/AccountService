@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace AccountService.Exceptions
 {
-    public class NotAuthorisedException : Exception
+    public class NotAuthenticatedException : Exception
     {
-        public NotAuthorisedException() : base("You are not authorised to do this action") { }
+        public NotAuthenticatedException() : base("You are not authorised to do this action") { }
     }
 }
