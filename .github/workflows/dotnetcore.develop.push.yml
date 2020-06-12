@@ -36,7 +36,7 @@ jobs:
       
       # Test the project
       - name: Test
-        run: dotnet test
+        run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       
       # Publish the release build in the /release folder
       - name: Publish
@@ -75,7 +75,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+          
   deliver:
     needs: build
     runs-on: ubuntu-18.04
