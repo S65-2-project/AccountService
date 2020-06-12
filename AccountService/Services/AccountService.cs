@@ -19,10 +19,12 @@ namespace AccountService.Services
         private readonly IMessageQueuePublisher _messageQueuePublisher;
         private readonly MessageQueueSettings _messageQueueSettings;
         private readonly ITokenGenerator _tokenGenerator;
+
+        private readonly IJwtIdClaimReaderHelper _jwtIdClaimReaderHelper;
         private readonly IUserMarketplacePublisher _userMarketplacePublisher;
 
         public AccountService(IAccountRepository repository, IHasher hasher, ITokenGenerator tokenGenerator,
-            IRegexHelper regexHelper, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings, IUserMarketplacePublisher _userMarketplacePublisher)
+            IRegexHelper regexHelper, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings, IUserMarketplacePublisher _userMarketplacePublisher, IJwtIdClaimReaderHelper jwtIdClaimReaderHelper)
         {
             _repository = repository;
             _hasher = hasher;
@@ -30,7 +32,9 @@ namespace AccountService.Services
             _regexHelper = regexHelper;
             _messageQueuePublisher = messageQueuePublisher;
             _messageQueueSettings = messageQueueSettings.Value;
+            _jwtIdClaimReaderHelper = jwtIdClaimReaderHelper;
             this._userMarketplacePublisher = _userMarketplacePublisher;
+
         }
 
         public async Task<Account> CreateAccount(CreateAccountModel model)
@@ -90,7 +94,7 @@ namespace AccountService.Services
             return account.WithoutSensitiveData();
         }
 
-        public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
+        public async Task<Account> UpdatePassword(Guid id, ChangePasswordModel passwordModel, string jwt)
         {
             var account = await _repository.Get(id);
 
@@ -108,6 +112,10 @@ namespace AccountService.Services
             {
                 throw new InvalidPasswordException("The new password does not meet the requirements.");
             }
+            if(_jwtIdClaimReaderHelper.getUserIdFromToken(jwt) != account.Id)
+            {
+                throw new NotAuthenticatedException();
+            }
 
             //hash the password. 
             var salt = _hasher.CreateSalt();
@@ -119,7 +127,7 @@ namespace AccountService.Services
             return updatedAccount.WithoutSensitiveData();
         }
 
-        public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model)
+        public async Task<Account> UpdateAccount(Guid id, UpdateAccountModel model , string jwt)
         {
             if (!_regexHelper.IsValidEmail(model.Email)) throw new InvalidEmailException();
 
@@ -131,6 +139,11 @@ namespace AccountService.Services
             {
                 throw new EmailAlreadyExistsException();
             }
+            if (_jwtIdClaimReaderHelper.getUserIdFromToken(jwt) != account.Id)
+            {
+                throw new NotAuthenticatedException();
+            }
+
 
             account.Email = model.Email;
             account.isDelegate = model.isDelegate;

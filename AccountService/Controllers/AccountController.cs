@@ -69,11 +69,11 @@ namespace AccountService.Controllers
 
         [Authorize]
         [HttpPut("UpdatePassword/{id}")]
-        public async Task<IActionResult> UpdatePassword(Guid id, ChangePasswordModel passwordModel)
+        public async Task<IActionResult> UpdatePassword(Guid id, ChangePasswordModel passwordModel, [FromHeader(Name = "Authorization")] string jwt)
         {
             try
             {
-                return Ok(await _accountService.UpdatePassword(id, passwordModel));
+                return Ok(await _accountService.UpdatePassword(id, passwordModel, jwt));
             }
             catch (Exception e)
             {
@@ -83,11 +83,11 @@ namespace AccountService.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccount(Guid id, [FromBody]UpdateAccountModel account)
+        public async Task<IActionResult> UpdateAccount(Guid id, [FromBody]UpdateAccountModel account, [FromHeader(Name = "Authorization")] string jwt)
         {
             try
             {
-                var result = await _accountService.UpdateAccount(id, account);
+                var result = await _accountService.UpdateAccount(id, account,jwt);
                 
                 if (result == null)
                 {

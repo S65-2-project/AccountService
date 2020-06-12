@@ -69,7 +69,12 @@ namespace AccountService
             services.AddTransient<IHasher, Hasher>();
 
             services.AddTransient<IRegexHelper, RegexHelper>();
+
+            services.AddTransient<IJwtIdClaimReaderHelper, JwtIdClaimReaderHelper>();
+            
+
             services.AddTransient<IUserMarketplacePublisher, UserMarketplacePublisher>();
+
             services.AddTransient<IAccountService, Services.AccountService>();
             
             services.AddTransient<IAccountRepository, AccountRepository>();
