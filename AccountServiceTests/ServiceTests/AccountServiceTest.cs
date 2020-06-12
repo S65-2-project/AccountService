@@ -45,8 +45,8 @@ namespace AccountServiceTests.ServiceTests
                 _regexHelper.Object,
                 _messageQueuePublisher.Object,
             Options.Create(new MessageQueueSettings()),
+            _userMarketplacePublisher.Object,
             _jwtIdClaimReaderHelper.Object
-            _userMarketplacePublisher.Object
                 );
         }
 
