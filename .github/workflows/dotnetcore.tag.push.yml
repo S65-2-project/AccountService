@@ -128,26 +128,24 @@ jobs:
         id: get_tag_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
 
-      # Setup connection with the gcloud CLI
       - name: Setup kubectl
         uses: azure/setup-kubectl@v1
 
-      # Get GKE cluster credentials
       - name: Set context via kubeconfig
         uses: azure/k8s-set-context@v1
         with:
-            method: kubeconfig
-            kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
       
       - name: Deploy Kubernetes with manifests
         uses: azure/k8s-deploy@v1
         with:
-            namespace: ${{ env.KUBERNETES_NAMESPACE }}
-            manifests: |
-              ./kube/autoscaler.yaml
-              ./kube/cluster-issuer.yaml
-              ./kube/deployment.yaml
-              ./kube/ingress.yaml
-              ./kube/service.yaml
-            images: |
-              ${{ env.DOCKER_ORGANIZATION }}/${{ env.DOCKER_REPOSITORY }}:${{ steps.get_tag_version.outputs.VERSION }}
+          namespace: ${{ env.KUBERNETES_NAMESPACE }}
+          manifests: |
+            ./kube/autoscaler.yaml
+            ./kube/cluster-issuer.yaml
+            ./kube/deployment.yaml
+            ./kube/ingress.yaml
+            ./kube/service.yaml
+          images: |
+            ${{ env.DOCKER_ORGANIZATION }}/${{ env.DOCKER_REPOSITORY }}:${{ steps.get_tag_version.outputs.VERSION }}

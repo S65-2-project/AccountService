@@ -114,8 +114,8 @@ jobs:
       - name: Download Kubernetes artifact
         uses: actions/download-artifact@v1
         with:
-            name: kubernetes-artifact
-            path: ./kube_develop
+          name: kubernetes-artifact
+          path: ./kube_develop
       
       - name: Setup Kubectl
         uses: azure/setup-kubectl@v1
@@ -129,12 +129,12 @@ jobs:
       - name: Deploy Kubernetes with manifests
         uses: azure/k8s-deploy@v1
         with:
-            namespace: ${{ env.KUBERNETES_NAMESPACE }}
-            manifests: |
-              ./kube_develop/autoscaler.yaml
-              ./kube_develop/cluster-issuer.yaml
-              ./kube_develop/deployment.yaml
-              ./kube_develop/ingress.yaml
-              ./kube_develop/service.yaml
-            images: |
-              ${{ env.DOCKER_ORGANIZATION }}/${{ env.DOCKER_REPOSITORY }}:${{ github.sha }}
+          namespace: ${{ env.KUBERNETES_NAMESPACE }}
+          manifests: |
+            ./kube_develop/autoscaler.yaml
+            ./kube_develop/cluster-issuer.yaml
+            ./kube_develop/deployment.yaml
+            ./kube_develop/ingress.yaml
+            ./kube_develop/service.yaml
+          images: |
+            ${{ env.DOCKER_ORGANIZATION }}/${{ env.DOCKER_REPOSITORY }}:${{ github.sha }}
