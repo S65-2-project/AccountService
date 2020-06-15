@@ -1,8 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: account-service
   name: account-service
-  namespace: s652
+  namespace: s652-develop
 spec:
   replicas: 1
   selector:
