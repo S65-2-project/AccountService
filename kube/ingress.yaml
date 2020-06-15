@@ -12,7 +12,8 @@ metadata:
   namespace: s652
 spec:
   rules:
-    - http:
+    - host: account.delegate-market.nl
+      http:
         paths:
           - backend:
               serviceName: account-service
