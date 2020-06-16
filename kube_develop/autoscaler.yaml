@@ -2,7 +2,7 @@ apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: account-service
-  namespace: s652
+  namespace: s652-develop
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
