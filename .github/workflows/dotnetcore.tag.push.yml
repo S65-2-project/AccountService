@@ -9,9 +9,7 @@ env:
   PROJECT_NAME: AccountService
   DOCKER_ORGANIZATION: s652
   DOCKER_REPOSITORY: account-service
-  GKE_CLUSTER: s65-2
-  GKE_ZONE: europe-west4-a
-  GKE_NAMESPACE: s65-2
+  KUBERNETES_NAMESPACE: s652
 
 jobs:
   build:
@@ -40,8 +38,7 @@ jobs:
       
       # Test the project
       - name: Test
-      run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-
+        run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
       # Publish the release build in the /release folder
       - name: Publish
@@ -86,9 +83,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_ACCESS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONARCLOUD_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
   deliver:
     needs: build
@@ -100,6 +94,7 @@ jobs:
         with:
           name: release-artifact
           path: ./release
+      
       - name: Download Dockerfile artifact
         uses: actions/download-artifact@v1
         with:
@@ -133,26 +128,24 @@ jobs:
         id: get_tag_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
 
-      # Setup connection with the gcloud CLI
-      - name: Setup gcloud CLI
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v1
+
+      - name: Set context via kubeconfig
+        uses: azure/k8s-set-context@v1
         with:
-          version: '290.0.1'
-          project_id: ${{ secrets.GKE_PROJECT }}
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-
-      # Get GKE cluster credentials
-      - name: Get GKE cluster credentials
-        run: gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }}
-
-      # Deploy to GKE cluster
-      - name: Deploy to GKE clusters
-        run: |
-          kubectl apply \
-            -f ./kube/autoscaler.yaml \
-            -f ./kube/deployment.yaml \
-            -f ./kube/ingress.yaml \
-            -f ./kube/service.yaml
-          kubectl set image Deployment/${{ env.DOCKER_REPOSITORY }} --namespace ${{ env.GKE_NAMESPACE }} ${{ env.DOCKER_REPOSITORY }}=${{ env.DOCKER_ORGANIZATION }}/${{ env.DOCKER_REPOSITORY }}:${{ steps.get_tag_version.outputs.VERSION }}
-          kubectl rollout status Deployment/${{ env.DOCKER_REPOSITORY }} --namespace ${{ env.GKE_NAMESPACE }}
-          kubectl get services -o wide
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      
+      - name: Deploy Kubernetes with manifests
+        uses: azure/k8s-deploy@v1
+        with:
+          namespace: ${{ env.KUBERNETES_NAMESPACE }}
+          manifests: |
+            ./kube/autoscaler.yaml
+            ./kube/cluster-issuer.yaml
+            ./kube/deployment.yaml
+            ./kube/ingress.yaml
+            ./kube/service.yaml
+          images: |
+            ${{ env.DOCKER_ORGANIZATION }}/${{ env.DOCKER_REPOSITORY }}:${{ steps.get_tag_version.outputs.VERSION }}

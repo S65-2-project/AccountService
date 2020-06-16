@@ -15,6 +15,7 @@ jobs:
     # Run the steps in a Docker container on the virtual machine
     container:
       image: mcr.microsoft.com/dotnet/core/sdk:3.1.201-bionic
+    
     steps:
       # Checkout Git repository
       - uses: actions/checkout@v2
@@ -29,7 +30,7 @@ jobs:
       
       # Test the project
       - name: Test
-        run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+        run: dotnet test
               
   sonarscanner:
     runs-on: ubuntu-18.04
