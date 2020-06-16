@@ -1,13 +1,15 @@
 # AccountService
 This is the accountservice of the Lisk delegate market project. It was made as a groupproject for Fontys. 
 
-It was made with .NET Core 3.1 and will function as an API for the Lisk Delegate Market. To make fully use of the API it is recommened to also look at the other services in the project.
+It was made with .NET Core 3.1 and will function as an API for the Lisk Delegate Market. To make fully use of the API it is recommened to also look at the other services in the project. The other services can be found [here](https://github.com/S65-2-project). If you want to see the live product it can be found [here](https://delegate-market.nl).
+
+Via this service users can register on the platform, log in and update their profile if they want to. It also takes care of creating new JWT. 
 
 ## External sources
 To run this project you will need to run the following services:
-- MongoDB
-- RabbitMQ
-- Sentry
+- [MongoDB](https://www.mongodb.com/re)
+- [RabbitMQ](https://www.rabbitmq.com/)
+- [Sentry](https://sentry.io)
 
 ## Configuration
 This is an example for the appsettings.json file that is needed to configure the application. 
@@ -50,14 +52,14 @@ This is an example for the appsettings.json file that is needed to configure the
 ## Github Actions
 The project runs on GitHub Actions with 3 different configuration.
 
-1. All feature/* branches will are tested and build.
-2. The develop branch is also develired and will be deployed to our development environment. 
+1. All feature/* branches will be tested and build.
+2. In addition to the steps of step 1 develop branch pushes will also be deliver to dockerhub and deploy to our develop environment.
 3. All pushes on a tag will be deliverd and deployed to our kubernetes environment.   
 
 To reproduce the Pipeline the following secrets are needed:
 - DOCKER_ACCESS_TOKEN : The access token or password of the docker registry
 - DOCKER_USER : The username of the docker registry
-- GPG_PASSPHRASE : The secret passphrase that is used to encrtypt and decrypt the GPG files
+- GPG_PASSPHRASE : The secret passphrase that is used to encrypt and decrypt the GPG files
 - KUBE_CONFIG : The kubeconfig file to access the kubernetes cluster
 - SONARCLOUD_ACCESS_TOKEN : The access token for sonarcloud
 
