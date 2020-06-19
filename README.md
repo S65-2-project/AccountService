@@ -70,6 +70,8 @@ All images with a SHA tag are development builds and versions with a version tag
 ## Deployment
 The project is deployed to a kubernetes cluster. in de ./kube_develop folder are all the different kubernetes configuration files for the development builds.  In the ./kube folder are the configuration files for the production builds. 
 
+To make a deployment on a kubernets cluster it needs to have an running [cert-manager](https://cert-manager.io/docs/). Once it is installed the deployment will  automatically also create a cluster issuer for it. 
+
 - autoscaler.yaml -> this is the autoscaler for the deployment
 - cluster-issuer.yaml-> to ensure there is a cluster issuer for the TLS certificates
 - deployment.yaml -> the deployment of the service itself
